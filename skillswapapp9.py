@@ -5,18 +5,7 @@ from datetime import datetime
 
 # ---------------- FIREBASE SETUP ----------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate({
-        "type": st.secrets.FIREBASE.type,
-        "project_id": st.secrets.FIREBASE.project_id,
-        "private_key_id": st.secrets.FIREBASE.private_key_id,
-        "private_key": st.secrets.FIREBASE.private_key.replace("\\n", "\n"),
-        "client_email": st.secrets.FIREBASE.client_email,
-        "client_id": st.secrets.FIREBASE.client_id,
-        "auth_uri": st.secrets.FIREBASE.auth_uri,
-        "token_uri": st.secrets.FIREBASE.token_uri,
-        "auth_provider_x509_cert_url": st.secrets.FIREBASE.auth_provider_x509_cert_url,
-        "client_x509_cert_url": st.secrets.FIREBASE.client_x509_cert_url
-    })
+    cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -74,6 +63,7 @@ def view_profiles():
             st.markdown(f"**Role**: {data.get('role', '')}")
             st.markdown(f"**Bio**: {data.get('bio', '')}")
             st.markdown("---")
+
 # ---------------- CHAT ----------------
 def chat_interface():
     st.subheader("💬 Cloud Chat")
@@ -139,6 +129,41 @@ def booking_interface():
         d = b.to_dict()
         st.markdown(f"📌 With **{d['teacher']}** on {d['datetime'].strftime('%Y-%m-%d %H:%M')} (Status: {d['status']})")
 
+# ---------------- ROOMS ----------------
+def create_room_interface():
+    st.subheader("🚪 Create or Join a Room")
+    room_name = st.text_input("Room Name")
+    if st.button("Create Room"):
+        if room_name:
+            room_ref = db.collection("rooms").document(room_name)
+            if room_ref.get().exists:
+                st.warning("Room already exists.")
+            else:
+                room_ref.set({
+                    "created_by": st.session_state.username,
+                    "created_at": datetime.now()
+                })
+                st.success(f"Room '{room_name}' created!")
+        else:
+            st.error("Please enter a room name.")
+
+    st.markdown("### 🌍 Available Rooms")
+    rooms = db.collection("rooms").stream()
+    room_list = []
+    for r in rooms:
+        data = r.to_dict()
+        room_list.append(r.id)
+        st.markdown(f"- **{r.id}** (by {data.get('created_by', 'unknown')})")
+    if room_list:
+        selected_room = st.selectbox("Join a room", room_list)
+        if st.button("Join Selected Room"):
+            st.markdown(f"""
+            <iframe src="https://meet.jit.si/{selected_room}" width="100%" height="500" allow="camera; microphone; fullscreen" style="border:0;"></iframe>
+            """, unsafe_allow_html=True)
+            st.info(f"You are in room: {selected_room}")
+    else:
+        st.info("No rooms available. Create one above!")
+
 # ---------------- MAIN ----------------
 st.markdown("<style>body{color:white; background-color:#222;} .stButton>button{color:white; background:#5c5c8a;}</style>", unsafe_allow_html=True)
 st.title("🌐 SkillSwap Cloud")
@@ -156,7 +181,7 @@ else:
         st.session_state.username = ""
         st.rerun()
 
-    tab1, tab2, tab3, tab4 = st.tabs(["💬 Chat", "🎥 Video", "🧑‍💻 Profiles", "📅 Booking"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Chat", "🎥 Video", "🧑‍💻 Profiles", "📅 Booking", "🚪 Rooms"])
     with tab1:
         chat_interface()
     with tab2:
