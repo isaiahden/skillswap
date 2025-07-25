@@ -29,6 +29,7 @@ def login_page():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 st.success(f"Logged in as {username}")
+                st.experimental_rerun()  # rerun to show main page immediately
                 return
         st.error("Invalid credentials.")
 
@@ -190,3 +191,5 @@ else:
         view_profiles()
     with tab4:
         booking_interface()
+    with tab5:
+        create_room_interface()
