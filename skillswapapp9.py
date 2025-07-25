@@ -275,7 +275,7 @@ else:
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
-        st.experimental_rerun()
+        st.rerun()
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "💬 Chat",
