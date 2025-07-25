@@ -29,7 +29,7 @@ def login_page():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 st.success(f"Logged in as {username}")
-                st.experimental_rerun()  # rerun to show main page immediately
+                st.rerun()  # rerun to show main page immediately
                 return
         st.error("Invalid credentials.")
 
