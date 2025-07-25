@@ -1,0 +1,7 @@
+streamlit
+firebase-admin
+google-cloud-firestore
+gtts
+deep-translator
+Pillow
+python-dotenv
