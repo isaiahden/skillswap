@@ -325,7 +325,11 @@ def booking_interface():
         ai_avatar = st.session_state["active_ai_avatar"]
         chat_id = f"{st.session_state.username}_{ai_teacher_name}"
 
-        st.markdown(f"### 🤖 Chat with {ai_teacher_name} ({ai_skill})")
+        st.markdown(f"""
+        <div style='background-color:#075E54; padding:10px 15px; border-radius:10px; color:white;'>
+            <h4>🤖 Chat with {ai_teacher_name} ({ai_skill})</h4>
+        </div>
+        """, unsafe_allow_html=True)
         st.image(ai_avatar, width=60)
 
         # Load chat history from Firestore
@@ -337,26 +341,28 @@ def booking_interface():
             d = h.to_dict()
             st.session_state["ai_chat_history"].append({"sender": d["sender"], "text": d["text"]})
 
-        # Display chat bubbles
+        # Display WhatsApp-style chat bubbles
         for msg in st.session_state["ai_chat_history"]:
             is_user = msg["sender"] == "user"
-            bubble_color = "#4CAF50" if is_user else "#444"
             align = "right" if is_user else "left"
+            bubble_color = "#dcf8c6" if is_user else "#fff"
+            text_color = "black" if is_user else "black"
+
             st.markdown(f"""
-            <div style="background-color:{bubble_color}; color:white; padding:8px 12px;
-                        border-radius:12px; margin:4px 0; max-width:70%; float:{align}; clear:both;">
+            <div style="background-color:{bubble_color}; color:{text_color}; padding:10px;
+                        border-radius:10px; margin:5px 0; max-width:75%; float:{align}; clear:both;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                 <b>{'You' if is_user else ai_teacher_name}:</b><br>{msg['text']}
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
 
-        # User input
+        # Input
         user_msg = st.text_input("Your message", key=f"ai_chat_input_{ai_teacher_name}")
 
         if st.button("Send to AI", key=f"send_{ai_teacher_name}"):
             if user_msg.strip():
-                # Save user message
                 db.collection("ai_chats").document(chat_id).collection("messages").add({
                     "sender": "user",
                     "text": user_msg,
@@ -364,11 +370,9 @@ def booking_interface():
                 })
 
                 try:
-                    # Configure Gemini with full model name
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     model = genai.GenerativeModel("gemini-1.5-pro-latest")
 
-                    # Prepare chat history
                     gemini_history = [
                         {"role": "user", "parts": [m["text"]]} if m["sender"] == "user"
                         else {"role": "model", "parts": [m["text"]]}
@@ -379,7 +383,6 @@ def booking_interface():
                     response = chat.send_message(user_msg)
                     gemini_response = response.text
 
-                    # Save AI reply
                     db.collection("ai_chats").document(chat_id).collection("messages").add({
                         "sender": "ai",
                         "text": gemini_response,
@@ -394,6 +397,7 @@ def booking_interface():
                         st.warning("⚠️ AI is temporarily unavailable due to usage limits. Please try again in a few minutes.")
                     else:
                         st.warning("⚠️ AI is currently unavailable. Please try again later.")
+
 
 
 
