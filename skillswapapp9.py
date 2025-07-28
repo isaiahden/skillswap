@@ -235,25 +235,26 @@ def booking_interface():
                 st.session_state["ai_chat_history"] = []
 
     # ---------------- REAL-TIME GEMINI AI CHAT ----------------
+    # ---------------- REAL-TIME GEMINI AI CHAT ----------------
     if "active_ai_teacher" in st.session_state:
         ai_teacher_name = st.session_state["active_ai_teacher"]
         ai_skill = st.session_state["active_ai_skill"]
         ai_avatar = st.session_state["active_ai_avatar"]
         chat_id = f"{st.session_state.username}_{ai_teacher_name}"
-
+    
         st.markdown(f"### 🤖 Chat with {ai_teacher_name} ({ai_skill})")
         st.image(ai_avatar, width=60)
-
+    
         # Load chat history from Firestore
         messages_ref = db.collection("ai_chats").document(chat_id).collection("messages").order_by("timestamp")
         history = messages_ref.stream()
-
+    
         st.session_state["ai_chat_history"] = []
         for h in history:
             d = h.to_dict()
             st.session_state["ai_chat_history"].append({"sender": d["sender"], "text": d["text"]})
-
-        # Show messages
+    
+        # Display message bubbles
         for msg in st.session_state["ai_chat_history"]:
             is_user = msg["sender"] == "user"
             bubble_color = "#4CAF50" if is_user else "#444"
@@ -264,35 +265,43 @@ def booking_interface():
                 <b>{'You' if is_user else ai_teacher_name}:</b><br>{msg['text']}
             </div>
             """, unsafe_allow_html=True)
-
+    
         st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
-
-        # Input field and send
+    
+        # Message input and send button
         user_msg = st.text_input("Your message", key=f"ai_chat_input_{ai_teacher_name}")
         if st.button("Send to AI", key=f"send_{ai_teacher_name}"):
             if user_msg.strip():
+                # Save user's message to Firestore
                 db.collection("ai_chats").document(chat_id).collection("messages").add({
                     "sender": "user",
                     "text": user_msg,
                     "timestamp": datetime.now()
                 })
-
+    
                 try:
+                    # Correct Gemini model usage
+                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])  # or use os.getenv("GEMINI_API_KEY")
                     model = genai.GenerativeModel("gemini-pro")
+    
                     chat = model.start_chat(history=[
-                        m["text"] if m["sender"] == "user" else f"{ai_teacher_name}: {m['text']}"
+                        {"role": "user", "parts": [m["text"]]} if m["sender"] == "user"
+                        else {"role": "model", "parts": [m["text"]]}
                         for m in st.session_state["ai_chat_history"]
                     ])
-                    gemini_response = chat.send_message(user_msg).text
-
+    
+                    response = chat.send_message(user_msg)
+                    gemini_response = response.text
+    
+                    # Save Gemini reply to Firestore
                     db.collection("ai_chats").document(chat_id).collection("messages").add({
                         "sender": "ai",
                         "text": gemini_response,
                         "timestamp": datetime.now()
                     })
-
+    
                     st.experimental_rerun()
-
+    
                 except Exception as e:
                     st.error(f"Gemini Error: {e}")
 
