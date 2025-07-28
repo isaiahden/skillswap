@@ -65,7 +65,7 @@ def login_page():
             st.session_state.logged_in = True
             st.session_state.username = username
             st.success(f"Logged in as {username}")
-            st.experimental_rerun()
+            st.rerun()
             return
         st.error("Invalid credentials.")
         
@@ -76,9 +76,7 @@ def signup_page():
     role = st.selectbox("Role", ["Student", "Teacher"])
     bio = st.text_area("Bio")
     if st.button("Sign Up"):
-        if not username.strip():
-            st.error("Username cannot be empty.")
-        elif get_user_data(username):
+        if db.collection("users").document(username).get().exists:
             st.error("Username already taken")
         else:
             db.collection("users").document(username).set({
