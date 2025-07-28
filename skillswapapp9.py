@@ -129,13 +129,24 @@ def profile_edit_sidebar():
 # ---------------- PROFILES ----------------
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
+
     search = st.text_input("Search by skill or role")
-    docs = db.collection("users").stream()
-    for doc in docs:
+
+    # Fetch all users
+    user_docs = db.collection("users").stream()
+    users = []
+
+    for doc in user_docs:
         username = doc.id
         if username == st.session_state.username:
             continue
         data = doc.to_dict()
+        users.append((username, data))
+
+    # Sort users alphabetically by their first skill or empty string
+    users_sorted = sorted(users, key=lambda x: (x[1].get("skills", [""])[0].lower() if x[1].get("skills") else ""))
+
+    for username, data in users_sorted:
         show = True
         if search:
             if search.lower() not in data.get("role", "").lower() and \
@@ -144,9 +155,9 @@ def view_profiles():
         if show:
             with st.container():
                 st.markdown(f"### 👤 {username}")
-                st.markdown(f"**Role**: {data.get('role', '')}")
-                st.markdown(f"**Bio**: {data.get('bio', '')}")
-                st.markdown(f"**Skills**: {', '.join(data.get('skills', []))}")
+                st.markdown(f"**Role**: {data.get('role', 'N/A')}")
+                st.markdown(f"**Bio**: {data.get('bio', 'N/A')}")
+                st.markdown(f"**Skills**: {', '.join(data.get('skills', [])) or 'None'}")
                 st.markdown("---")
 
 # ---------------- CHAT ----------------
