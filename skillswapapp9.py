@@ -163,7 +163,7 @@ def chat_interface():
         selected_user = st.selectbox("Select a user to chat with", other_users)
         if st.button("Open Chat"):
             st.session_state.chat_partner = selected_user
-            st.experimental_rerun()
+            st.rerun()
         return
 
     # Chat view
