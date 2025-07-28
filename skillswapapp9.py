@@ -474,24 +474,30 @@ def channel_interface():
                         st.experimental_rerun()
 
             # Show messages (WhatsApp-style bubbles)
+            # Show messages (WhatsApp-style bubbles)
             st.markdown("### 💬 Messages")
             msgs = db.collection("channels").document(selected["id"]).collection("messages") \
                 .order_by("timestamp").stream()
             for m in msgs:
                 d = m.to_dict()
-                is_me = d["sender"] == st.session_state.username
+                sender = d.get("sender", "Unknown")
+                text = d.get("text", "")
+                timestamp = d.get("timestamp")
+                is_me = sender == st.session_state.username
                 align = "right" if is_me else "left"
                 color = "#dcf8c6" if is_me else "#fff"
-                time = d["timestamp"].strftime("%b %d %H:%M")
+                time = timestamp.strftime("%b %d %H:%M") if timestamp else "Unknown time"
+            
                 st.markdown(f"""
                 <div style='background-color:{color}; padding:10px; margin:6px 0; 
                             border-radius:10px; max-width:70%; float:{align}; clear:both;
                             box-shadow:0 2px 5px rgba(0,0,0,0.1);'>
-                    <b>{'You' if is_me else d['sender']}</b><br>
-                    {d['text']}<br>
+                    <b>{'You' if is_me else sender}</b><br>
+                    {text}<br>
                     <small style='color:gray;'>{time}</small>
                 </div>
                 """, unsafe_allow_html=True)
+            
             st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
 
 
