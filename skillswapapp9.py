@@ -7,7 +7,7 @@ import hashlib
 
 # ---------------- FIREBASE SETUP ----------------
 if not firebase_admin._apps:
-    firebase_creds = st.secrets["firebase"]
+    firebase_creds = st.secrets[FIREBASE]
     cred = credentials.Certificate(json.loads(json.dumps(firebase_creds)))
     firebase_admin.initialize_app(cred)
 db = firestore.client()
