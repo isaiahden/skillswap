@@ -184,30 +184,30 @@ def chat_interface():
 
 # ---------------- VIDEO ----------------
 def video_interface():
-    st.subheader("🎥 Video Call Room")
+    st.subheader("🎥 Video Room (Zoom Style with Jitsi)")
 
-    # Track if user is in a room
-    if "in_video_room" not in st.session_state:
-        st.session_state.in_video_room = False
+    room_name = f"{st.session_state.username}-room"
+    st.markdown("Share this room name with others to join together.")
 
-    room = f"{st.session_state.username}-room"
+    if "in_room" not in st.session_state:
+        st.session_state["in_room"] = False
 
-    if not st.session_state.in_video_room:
+    if not st.session_state["in_room"]:
         if st.button("Join Video Room"):
-            st.session_state.in_video_room = True
+            st.session_state["in_room"] = True
     else:
-        # Display Jitsi video room
-        st.markdown(f"""
-        <iframe src="https://meet.jit.si/{room}" width="100%" height="500"
-        allow="camera; microphone; fullscreen" style="border:0;"></iframe>
-        """, unsafe_allow_html=True)
-
-        st.info("Others can join this room by entering the same room name.")
-
-        # Leave button
         if st.button("Leave Room"):
-            st.session_state.in_video_room = False
-            st.success("✅ You have left the room.")
+            st.session_state["in_room"] = False
+
+    if st.session_state["in_room"]:
+        st.markdown(f"""
+        <iframe
+            src="https://meet.jit.si/{room_name}#userInfo.displayName='{st.session_state.username}'"
+            style="height: 600px; width: 100%; border: 0px;"
+            allow="camera; microphone; fullscreen; display-capture"
+        ></iframe>
+        """, unsafe_allow_html=True)
+        st.info("✅ You're now in the video room.")
 
 
 
