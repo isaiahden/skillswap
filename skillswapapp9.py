@@ -185,11 +185,31 @@ def chat_interface():
 # ---------------- VIDEO ----------------
 def video_interface():
     st.subheader("🎥 Video Call Room")
+
+    # Track if user is in a room
+    if "in_video_room" not in st.session_state:
+        st.session_state.in_video_room = False
+
     room = f"{st.session_state.username}-room"
-    st.markdown(f"""
-    <iframe src="https://meet.jit.si/{room}" width="100%" height="500" allow="camera; microphone; fullscreen" style="border:0;"></iframe>
-    """, unsafe_allow_html=True)
-    st.info("Others can join this room by entering the same room name.")
+
+    if not st.session_state.in_video_room:
+        if st.button("Join Video Room"):
+            st.session_state.in_video_room = True
+    else:
+        # Display Jitsi video room
+        st.markdown(f"""
+        <iframe src="https://meet.jit.si/{room}" width="100%" height="500"
+        allow="camera; microphone; fullscreen" style="border:0;"></iframe>
+        """, unsafe_allow_html=True)
+
+        st.info("Others can join this room by entering the same room name.")
+
+        # Leave button
+        if st.button("Leave Room"):
+            st.session_state.in_video_room = False
+            st.success("✅ You have left the room.")
+
+
 
 # ---------------- BOOKING (AI ONLY) ----------------
 def booking_interface():
