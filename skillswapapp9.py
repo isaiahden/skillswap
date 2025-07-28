@@ -76,7 +76,9 @@ def signup_page():
     role = st.selectbox("Role", ["Student", "Teacher"])
     bio = st.text_area("Bio")
     if st.button("Sign Up"):
-        if get_user_data(username):
+        if not username.strip():
+            st.error("Username cannot be empty.")
+        elif get_user_data(username):
             st.error("Username already taken")
         else:
             db.collection("users").document(username).set({
