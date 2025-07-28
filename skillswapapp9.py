@@ -215,22 +215,48 @@ def booking_interface():
             st.session_state["ai_chat_history"] = []
 
     # Launch AI chat if requested
+# ---------------- REAL-TIME STYLE AI CHAT ----------------
     if "active_ai_teacher" in st.session_state:
         ai_teacher_name = st.session_state["active_ai_teacher"]
         ai_skill = st.session_state["active_ai_skill"]
         ai_avatar = st.session_state["active_ai_avatar"]
+        
         st.markdown(f"### 🤖 Chat with {ai_teacher_name} ({ai_skill})")
-        st.image(ai_avatar, width=80)
+        st.image(ai_avatar, width=60)
+    
+        # Initialize chat history
         if "ai_chat_history" not in st.session_state:
             st.session_state["ai_chat_history"] = []
-        for msg in st.session_state["ai_chat_history"]:
-            st.markdown(msg, unsafe_allow_html=True)
-        user_msg = st.text_input("Your message to the AI teacher", key="ai_chat_input")
+    
+        # Display message history like a real chat
+        for i, msg in enumerate(st.session_state["ai_chat_history"]):
+            is_user = msg["sender"] == "user"
+            bubble_color = "#4CAF50" if is_user else "#444"
+            text_color = "white"
+            align = "right" if is_user else "left"
+            st.markdown(f"""
+            <div style="background-color:{bubble_color}; color:{text_color}; padding:8px 12px;
+                        border-radius:12px; margin:4px 0; max-width:70%; float:{align}; clear:both;">
+                <b>{'You' if is_user else ai_teacher_name}:</b><br>{msg['text']}
+            </div>
+            """, unsafe_allow_html=True)
+    
+        st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
+    
+        # Message input
+        user_msg = st.text_input("Type your message", key="ai_chat_input")
+    
         if st.button("Send to AI"):
-            # Replace this with a real LLM API call for real AI
-            ai_reply = f"<b>{ai_teacher_name}:</b> I received your message: '{user_msg}'"
-            st.session_state["ai_chat_history"].append(f"<b>You:</b> {user_msg}")
-            st.session_state["ai_chat_history"].append(ai_reply)
+            if user_msg.strip():
+                # Add user message to chat
+                st.session_state["ai_chat_history"].append({"sender": "user", "text": user_msg})
+    
+                # Fake AI reply (replace with real API later)
+                ai_reply = f"I received your message: '{user_msg}' and I’ll help you with {ai_skill.lower()}!"
+                st.session_state["ai_chat_history"].append({"sender": "ai", "text": ai_reply})
+    
+                st.rerun()  # Refresh to show new messages
+
 
 # ---------------- ROOMS ----------------
 def create_room_interface():
