@@ -4,7 +4,6 @@ from firebase_admin import credentials, firestore
 from datetime import datetime
 import json
 import google.generativeai as genai
-from google.generativeai.types.content_types import TextPart
 from gtts import gTTS
 import base64
 import hashlib
@@ -266,7 +265,7 @@ def booking_interface():
                 try:
                     model = genai.GenerativeModel("gemini-pro")
                     chat = model.start_chat(history=[
-                        TextPart(m["text"]) if m["sender"] == "user" else TextPart(f"{ai_teacher_name}: {m['text']}")
+                        m["text"] if m["sender"] == "user" else f"{ai_teacher_name}: {m['text']}"
                         for m in st.session_state["ai_chat_history"]
                     ])
                     gemini_response = chat.send_message(user_msg).text
