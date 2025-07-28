@@ -68,7 +68,7 @@ def login_page():
             st.experimental_rerun()
             return
         st.error("Invalid credentials.")
-
+        
 def signup_page():
     st.subheader("📝 Sign Up")
     username = st.text_input("New Username", key="signup_user")
