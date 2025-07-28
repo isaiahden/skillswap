@@ -466,7 +466,7 @@ else:
     with tab4:
         booking_interface()
     with tab5:
-        create_room_interface()
+        channel_interface()
 
 # ---------------- FOOTER ----------------
 st.markdown("---")
