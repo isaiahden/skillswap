@@ -151,36 +151,63 @@ def view_profiles():
 
 # ---------------- CHAT ----------------
 def chat_interface():
-    st.subheader("💬 Cloud Chat")
-    users = [doc.id for doc in db.collection("users").stream()]
-    other_users = [u for u in users if u != st.session_state.username]
-    if not other_users:
-        st.info("No other users to chat with.")
+    st.subheader("💬 WhatsApp-Style Chat")
+
+    # Select chat partner
+    if "chat_partner" not in st.session_state:
+        users = [doc.id for doc in db.collection("users").stream()]
+        other_users = [u for u in users if u != st.session_state.username]
+        if not other_users:
+            st.info("No other users to chat with.")
+            return
+        selected_user = st.selectbox("Select a user to chat with", other_users)
+        if st.button("Open Chat"):
+            st.session_state.chat_partner = selected_user
+            st.experimental_rerun()
         return
-    recipient = st.selectbox("Chat with", other_users)
-    msg = st.text_input("Type your message")
+
+    # Chat view
+    partner = st.session_state.chat_partner
+    st.markdown(f"### 💬 Chatting with **{partner}**")
+    st.button("⬅️ Back", on_click=lambda: st.session_state.pop("chat_partner", None))
+
+    chat_id = "_".join(sorted([st.session_state.username, partner]))  # consistent ID
+    msg_ref = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp")
+    messages = msg_ref.stream()
+
+    # Display messages in WhatsApp style
+    for m in messages:
+        data = m.to_dict()
+        is_user = data["sender"] == st.session_state.username
+        bubble_color = "#DCF8C6" if is_user else "#ECECEC"
+        align = "right" if is_user else "left"
+        name = "You" if is_user else partner
+        time_str = data["timestamp"].strftime("%H:%M")
+
+        st.markdown(f"""
+        <div style='max-width: 75%; margin-bottom: 8px; float: {align}; clear: both;'>
+            <div style='background-color: {bubble_color}; padding: 10px 14px; border-radius: 15px;
+                        box-shadow: 1px 1px 5px #999; font-size: 15px;'>
+                <strong>{name}</strong><br>{data["text"]}<br>
+                <span style='font-size: 11px; float: right;'>{time_str}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='clear: both;'></div>", unsafe_allow_html=True)
+
+    # Input and send button
+    message = st.text_input("Type your message", key="chat_msg_input")
     if st.button("Send"):
-        try:
-            db.collection("messages").add({
-                "from": st.session_state.username,
-                "to": recipient,
-                "text": msg,
+        if message.strip():
+            db.collection("chats").document(chat_id).collection("messages").add({
+                "sender": st.session_state.username,
+                "receiver": partner,
+                "text": message.strip(),
                 "timestamp": datetime.now()
             })
-            st.success("Message sent!")
-        except Exception as e:
-            st.error(f"Error: {e}")
+            st.rerun()
 
-    st.markdown("---")
-    st.markdown("### 📥 Your Inbox")
-    inbox = db.collection("messages") \
-        .where("to", "==", st.session_state.username) \
-        .order_by("timestamp", direction=firestore.Query.DESCENDING) \
-        .stream()
-    for m in inbox:
-        d = m.to_dict()
-        time_str = d["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
-        st.markdown(f"**From {d['from']}** ({time_str}): {d['text']}")
 
 # ---------------- VIDEO ----------------
 def video_room_interface():
