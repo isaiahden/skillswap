@@ -10,6 +10,34 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# ---------------- AI TEACHERS ----------------
+AI_TEACHERS = [
+    {
+        "name": "Ada AI",
+        "skill": "Python Programming",
+        "bio": "Expert in Python and data science.",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Ada"
+    },
+    {
+        "name": "Leo AI",
+        "skill": "Digital Marketing",
+        "bio": "Marketing strategist and growth hacker.",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Leo"
+    },
+    {
+        "name": "Marie AI",
+        "skill": "French Language",
+        "bio": "Native French speaker and language coach.",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Marie"
+    },
+    {
+        "name": "Arturo AI",
+        "skill": "Graphic Design",
+        "bio": "Creative designer with 10+ years experience.",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Arturo"
+    }
+]
+
 # ---------------- UTILS ----------------
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -36,7 +64,7 @@ def login_page():
             st.session_state.logged_in = True
             st.session_state.username = username
             st.success(f"Logged in as {username}")
-            st.rerun()
+            st.experimental_rerun()
             return
         st.error("Invalid credentials.")
 
@@ -142,46 +170,60 @@ def video_interface():
     """, unsafe_allow_html=True)
     st.info("Others can join this room by entering the same room name.")
 
-# ---------------- BOOKING ----------------
+# ---------------- BOOKING (AI ONLY) ----------------
 def booking_interface():
-    st.subheader("📅 Schedule a Session")
-    users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
-    teacher = st.selectbox("Choose a teacher", users)
+    st.subheader("📅 Book an AI Teacher")
+    ai_names = [f"{ai['name']} ({ai['skill']})" for ai in AI_TEACHERS]
+    ai_choice = st.selectbox("Choose an AI Teacher", ai_names)
+    ai_teacher = AI_TEACHERS[ai_names.index(ai_choice)]
+    st.image(ai_teacher["avatar"], width=80)
+    st.markdown(f"**{ai_teacher['name']}** — *{ai_teacher['skill']}*  \n{ai_teacher['bio']}")
     date = st.date_input("Date")
     time = st.time_input("Time")
     if st.button("Book Session"):
-        try:
-            db.collection("bookings").add({
-                "student": st.session_state.username,
-                "teacher": teacher,
-                "datetime": datetime.combine(date, time),
-                "status": "pending"
-            })
-            # Notify teacher
-            db.collection("users").document(teacher).update({
-                "notifications": firestore.ArrayUnion([f"New booking from {st.session_state.username} on {date} at {time}"])
-            })
-            st.success("Session booked!")
-        except Exception as e:
-            st.error(f"Error: {e}")
+        db.collection("bookings").add({
+            "student": st.session_state.username,
+            "teacher": ai_teacher["name"],
+            "skill": ai_teacher["skill"],
+            "datetime": datetime.combine(date, time),
+            "status": "confirmed",
+            "ai": True
+        })
+        st.success(f"Session booked with {ai_teacher['name']}!")
+        st.session_state["last_ai_teacher"] = ai_teacher  # For chat launch
 
-    st.markdown("### 🗓️ Your Bookings as Student")
+    st.markdown("### 🗓️ Your AI Bookings")
     bookings = db.collection("bookings") \
         .where("student", "==", st.session_state.username) \
+        .where("ai", "==", True) \
         .order_by("datetime") \
         .stream()
     for b in bookings:
         d = b.to_dict()
-        st.markdown(f"📌 With **{d['teacher']}** on {d['datetime'].strftime('%Y-%m-%d %H:%M')} (Status: {d['status']})")
+        st.markdown(f"🤖 **{d['teacher']}** ({d['skill']}) on {d['datetime'].strftime('%Y-%m-%d %H:%M')} (Status: {d['status']})")
+        if st.button(f"Chat with {d['teacher']} ({d['datetime'].strftime('%Y-%m-%d %H:%M')})", key=f"chat_{d['teacher']}_{d['datetime']}"):
+            st.session_state["active_ai_teacher"] = d['teacher']
+            st.session_state["active_ai_skill"] = d['skill']
+            st.session_state["active_ai_avatar"] = next(ai["avatar"] for ai in AI_TEACHERS if ai["name"] == d["teacher"])
+            st.session_state["ai_chat_history"] = []
 
-    st.markdown("### 🗓️ Your Bookings as Teacher")
-    bookings_teacher = db.collection("bookings") \
-        .where("teacher", "==", st.session_state.username) \
-        .order_by("datetime") \
-        .stream()
-    for b in bookings_teacher:
-        d = b.to_dict()
-        st.markdown(f"📌 With **{d['student']}** on {d['datetime'].strftime('%Y-%m-%d %H:%M')} (Status: {d['status']})")
+    # Launch AI chat if requested
+    if "active_ai_teacher" in st.session_state:
+        ai_teacher_name = st.session_state["active_ai_teacher"]
+        ai_skill = st.session_state["active_ai_skill"]
+        ai_avatar = st.session_state["active_ai_avatar"]
+        st.markdown(f"### 🤖 Chat with {ai_teacher_name} ({ai_skill})")
+        st.image(ai_avatar, width=80)
+        if "ai_chat_history" not in st.session_state:
+            st.session_state["ai_chat_history"] = []
+        for msg in st.session_state["ai_chat_history"]:
+            st.markdown(msg, unsafe_allow_html=True)
+        user_msg = st.text_input("Your message to the AI teacher", key="ai_chat_input")
+        if st.button("Send to AI"):
+            # Replace this with a real LLM API call for real AI
+            ai_reply = f"<b>{ai_teacher_name}:</b> I received your message: '{user_msg}'"
+            st.session_state["ai_chat_history"].append(f"<b>You:</b> {user_msg}")
+            st.session_state["ai_chat_history"].append(ai_reply)
 
 # ---------------- ROOMS ----------------
 def create_room_interface():
@@ -275,7 +317,7 @@ else:
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
-        st.rerun()
+        st.experimental_rerun()
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "💬 Chat",
