@@ -2,11 +2,13 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
+import json
 import hashlib
 
 # ---------------- FIREBASE SETUP ----------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_key.json")
+    firebase_creds = st.secrets["firebase"]
+    cred = credentials.Certificate(json.loads(json.dumps(firebase_creds)))
     firebase_admin.initialize_app(cred)
 db = firestore.client()
 
