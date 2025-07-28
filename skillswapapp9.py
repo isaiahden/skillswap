@@ -401,74 +401,98 @@ def booking_interface():
 
 # ---------------- ROOMS ----------------
 def channel_interface():
-    st.subheader("📢 Create or Join a Channel (WhatsApp Style)")
-    channel_name = st.text_input("Channel Name")
-    channel_desc = st.text_area("Channel Description")
+    st.title("📢 SkillSwap Channels")
 
-    if st.button("Create Channel"):
-        if channel_name:
-            channel_id = channel_name.strip().lower()
-            channel_ref = db.collection("channels").document(channel_id)
-            if channel_ref.get().exists:
-                st.warning("Channel already exists.")
-            else:
-                try:
-                    channel_ref.set({
-                        "name": channel_name,
-                        "description": channel_desc,
-                        "created_by": st.session_state.username,
-                        "created_at": datetime.now(),
-                        "followers": [st.session_state.username]
-                    })
-                    st.success(f"Channel '{channel_name}' created!")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-        else:
-            st.error("Please enter a channel name.")
-
-    st.markdown("### 🔍 Browse Channels")
+    # Load all channels
     channels = db.collection("channels").stream()
-    available_channels = []
+    channel_data = []
     for c in channels:
-        data = c.to_dict()
-        available_channels.append(c.id)
-        st.markdown(f"**{data['name']}** — {data.get('description', '')}")
+        info = c.to_dict()
+        info["id"] = c.id
+        channel_data.append(info)
 
-    if available_channels:
-        selected_channel = st.selectbox("Select a channel to follow/view", available_channels)
-        channel_ref = db.collection("channels").document(selected_channel)
-        channel_doc = channel_ref.get()
-        if channel_doc.exists:
-            data = channel_doc.to_dict()
-            st.info(f"Channel by: {data['created_by']}")
-            st.markdown(f"### 📄 Description\n{data.get('description', 'No description')}")
+    # Layout split: Sidebar list + Chat pane
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.markdown("### 🔍 Available Channels")
+        if not channel_data:
+            st.info("No channels yet.")
+        else:
+            selected_channel = st.radio("Choose a Channel", [f"{c['name']} - by {c['created_by']}" for c in channel_data], key="channel_selector")
+            selected = next((c for c in channel_data if f"{c['name']} - by {c['created_by']}" == selected_channel), None)
+    with col2:
+        # Create new channel
+        with st.expander("➕ Create New Channel"):
+            channel_name = st.text_input("Channel Name")
+            channel_desc = st.text_area("Description")
+            if st.button("Create Channel"):
+                if not channel_name:
+                    st.error("Please enter a name.")
+                else:
+                    new_id = channel_name.strip().lower()
+                    channel_ref = db.collection("channels").document(new_id)
+                    if channel_ref.get().exists:
+                        st.warning("Channel already exists.")
+                    else:
+                        channel_ref.set({
+                            "name": channel_name,
+                            "description": channel_desc,
+                            "created_by": st.session_state.username,
+                            "created_at": datetime.now(),
+                            "followers": [st.session_state.username]
+                        })
+                        st.success("Channel created!")
+                        st.experimental_rerun()
 
-            # Follow channel
-            if st.session_state.username not in data.get("followers", []):
-                if st.button("Follow Channel"):
-                    channel_ref.update({"followers": firestore.ArrayUnion([st.session_state.username])})
-                    st.success("You are now following this channel.")
+        # If a channel is selected
+        if selected:
+            st.markdown(f"### 🗨️ {selected['name']}")
+            st.caption(f"🧑‍🏫 Created by: {selected['created_by']}")
+            st.markdown(selected.get("description", "No description."))
 
-            # Creator can post messages
-            if st.session_state.username == data.get("created_by"):
-                message = st.text_input("Post a message to followers")
-                if st.button("Send Broadcast") and message.strip():
-                    db.collection("channels").document(selected_channel).collection("messages").add({
-                        "text": message.strip(),
-                        "timestamp": datetime.now()
+            # Follow
+            if st.session_state.username not in selected.get("followers", []):
+                if st.button("Follow this channel"):
+                    db.collection("channels").document(selected["id"]).update({
+                        "followers": firestore.ArrayUnion([st.session_state.username])
                     })
-                    st.success("Message sent!")
+                    st.success("You're now following this channel.")
+                    st.experimental_rerun()
 
-            # Show messages
-            st.markdown("### 💬 Channel Messages")
-            messages = db.collection("channels").document(selected_channel).collection("messages").order_by("timestamp").stream()
-            for msg in messages:
-                d = msg.to_dict()
-                ts = d['timestamp'].strftime('%Y-%m-%d %H:%M')
-                st.markdown(f"🕒 **{ts}**: {d['text']}")
-    else:
-        st.info("No channels yet. Create one above!")
+            # Broadcast form (only creator)
+            if st.session_state.username == selected["created_by"]:
+                with st.form(key="broadcast_form"):
+                    message = st.text_input("Broadcast Message")
+                    send = st.form_submit_button("Send")
+                    if send and message.strip():
+                        db.collection("channels").document(selected["id"]).collection("messages").add({
+                            "text": message.strip(),
+                            "sender": st.session_state.username,
+                            "timestamp": datetime.now()
+                        })
+                        st.success("Message sent.")
+                        st.experimental_rerun()
 
+            # Show messages (WhatsApp-style bubbles)
+            st.markdown("### 💬 Messages")
+            msgs = db.collection("channels").document(selected["id"]).collection("messages") \
+                .order_by("timestamp").stream()
+            for m in msgs:
+                d = m.to_dict()
+                is_me = d["sender"] == st.session_state.username
+                align = "right" if is_me else "left"
+                color = "#dcf8c6" if is_me else "#fff"
+                time = d["timestamp"].strftime("%b %d %H:%M")
+                st.markdown(f"""
+                <div style='background-color:{color}; padding:10px; margin:6px 0; 
+                            border-radius:10px; max-width:70%; float:{align}; clear:both;
+                            box-shadow:0 2px 5px rgba(0,0,0,0.1);'>
+                    <b>{'You' if is_me else d['sender']}</b><br>
+                    {d['text']}<br>
+                    <small style='color:gray;'>{time}</small>
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
 
 
 
