@@ -486,7 +486,7 @@ else:
     with tab1:
         chat_interface()
     with tab2:
-        video_interface()
+        video_room_interface()
     with tab3:
         view_profiles()
     with tab4:
