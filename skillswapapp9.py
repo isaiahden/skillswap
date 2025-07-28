@@ -280,30 +280,30 @@ def booking_interface():
                 })
     
                 try:
-                    # Correct Gemini model usage
-                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])  # or use os.getenv("GEMINI_API_KEY")
+                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     model = genai.GenerativeModel("gemini-pro")
-    
+                
                     chat = model.start_chat(history=[
                         {"role": "user", "parts": [m["text"]]} if m["sender"] == "user"
                         else {"role": "model", "parts": [m["text"]]}
                         for m in st.session_state["ai_chat_history"]
                     ])
-    
+                
                     response = chat.send_message(user_msg)
                     gemini_response = response.text
-    
-                    # Save Gemini reply to Firestore
+                
+                    # Save Gemini reply
                     db.collection("ai_chats").document(chat_id).collection("messages").add({
                         "sender": "ai",
                         "text": gemini_response,
                         "timestamp": datetime.now()
                     })
-    
+                
                     st.experimental_rerun()
-    
+                
                 except Exception as e:
                     st.error(f"Gemini Error: {e}")
+
 
 # ---------------- ROOMS ----------------
 def create_room_interface():
