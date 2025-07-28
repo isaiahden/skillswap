@@ -316,74 +316,94 @@ def booking_interface():
 
 
 # ---------------- ROOMS ----------------
+from datetime import datetime
+import streamlit as st
+from firebase_admin import firestore
+
 def channel_interface():
     st.subheader("📢 Create or Join a Channel (WhatsApp Style)")
+
+    # --- Channel Creation ---
     channel_name = st.text_input("Channel Name")
     channel_desc = st.text_area("Channel Description")
 
     if st.button("Create Channel"):
-        if channel_name:
+        if channel_name.strip():
             channel_id = channel_name.strip().lower()
             channel_ref = db.collection("channels").document(channel_id)
-            if channel_ref.get().exists:
-                st.warning("Channel already exists.")
-            else:
-                try:
+
+            try:
+                if channel_ref.get().exists:
+                    st.warning("Channel already exists.")
+                else:
                     channel_ref.set({
-                        "name": channel_name,
-                        "description": channel_desc,
+                        "name": channel_name.strip(),
+                        "description": channel_desc.strip(),
                         "created_by": st.session_state.username,
                         "created_at": datetime.now(),
                         "followers": [st.session_state.username]
                     })
-                    st.success(f"Channel '{channel_name}' created!")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.success(f"Channel '{channel_name.strip()}' created successfully!")
+            except Exception as e:
+                st.error(f"❌ Firestore Error: {e}")
         else:
-            st.error("Please enter a channel name.")
+            st.error("Please enter a valid channel name.")
 
+    # --- Display All Channels ---
     st.markdown("### 🔍 Browse Channels")
-    channels = db.collection("channels").stream()
-    available_channels = []
-    for c in channels:
-        data = c.to_dict()
-        available_channels.append(c.id)
-        st.markdown(f"**{data['name']}** — {data.get('description', '')}  ")
+    try:
+        channels = db.collection("channels").stream()
+        channel_dict = {c.id: c.to_dict() for c in channels}
+    except Exception as e:
+        st.error(f"❌ Error loading channels: {e}")
+        return
 
-    if available_channels:
-        selected_channel = st.selectbox("Select a channel to follow/view", available_channels)
-        channel_ref = db.collection("channels").document(selected_channel)
-        channel_doc = channel_ref.get()
-        if channel_doc.exists:
-            data = channel_doc.to_dict()
-            st.info(f"Channel by: {data['created_by']}")
-            st.markdown(f"### 📄 Description\n{data.get('description', 'No description')}")
+    if channel_dict:
+        selected_channel = st.selectbox("Select a channel to view/follow", list(channel_dict.keys()))
+        channel_data = channel_dict[selected_channel]
 
-            # Follow channel
-            if st.session_state.username not in data.get("followers", []):
-                if st.button("Follow Channel"):
-                    channel_ref.update({"followers": firestore.ArrayUnion([st.session_state.username])})
-                    st.success("You are now following this channel.")
+        st.markdown(f"### 📄 Description")
+        st.markdown(f"**{channel_data.get('name')}** — _by {channel_data.get('created_by')}_" + 
+                    f"\n\n{channel_data.get('description', 'No description')}")
 
-            # Creator can post messages
-            if st.session_state.username == data.get("created_by"):
-                message = st.text_input("Post a message to followers")
-                if st.button("Send Broadcast") and message.strip():
+        # Follow the channel
+        if st.session_state.username not in channel_data.get("followers", []):
+            if st.button("Follow This Channel"):
+                try:
+                    db.collection("channels").document(selected_channel).update({
+                        "followers": firestore.ArrayUnion([st.session_state.username])
+                    })
+                    st.success("✅ You are now following this channel.")
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.error(f"❌ Error following channel: {e}")
+
+        # Creator can post messages
+        if st.session_state.username == channel_data.get("created_by"):
+            message = st.text_input("Broadcast Message to Followers", key="broadcast_msg")
+            if st.button("Send Broadcast", key="send_broadcast") and message.strip():
+                try:
                     db.collection("channels").document(selected_channel).collection("messages").add({
                         "text": message.strip(),
                         "timestamp": datetime.now()
                     })
-                    st.success("Message sent!")
+                    st.success("📤 Message sent to channel.")
+                except Exception as e:
+                    st.error(f"❌ Error sending message: {e}")
 
-            # Show messages
-            st.markdown("### 💬 Channel Messages")
+        # Show messages
+        st.markdown("### 💬 Channel Messages")
+        try:
             messages = db.collection("channels").document(selected_channel).collection("messages").order_by("timestamp").stream()
             for msg in messages:
                 d = msg.to_dict()
                 ts = d['timestamp'].strftime('%Y-%m-%d %H:%M')
-                st.markdown(f"🕒 **{ts}**: {d['text']}")
+                st.markdown(f"🕒 **{ts}** — {d['text']}")
+        except Exception as e:
+            st.error(f"❌ Error loading messages: {e}")
     else:
-        st.info("No channels yet. Create one above!")
+        st.info("No channels available. Create one above.")
+
 
 
 # ---------------- NOTIFICATIONS ----------------
