@@ -13,7 +13,11 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
     firebase_admin.initialize_app(cred)
 db = firestore.client()
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+if not api_key:
+    st.error("❌ Gemini API key not found in secrets or environment variable.")
+else:
+    genai.configure(api_key=api_key)
 
 # ---------------- AI TEACHERS ----------------
 AI_TEACHERS = [
