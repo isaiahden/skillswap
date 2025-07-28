@@ -9,7 +9,7 @@ import hashlib
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
     firebase_admin.initialize_app(cred)
-db = firestore.client
+db = firestore.client()
 
 # ---------------- AI TEACHERS ----------------
 AI_TEACHERS = [
