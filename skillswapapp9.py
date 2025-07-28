@@ -316,56 +316,75 @@ def booking_interface():
 
 
 # ---------------- ROOMS ----------------
-def create_room_interface():
-    st.subheader("🚪 Create or Join a Room")
-    room_name = st.text_input("Room Name")
-    if st.button("Create Room"):
-        if room_name:
-            room_name_clean = room_name.strip().lower()
-            room_ref = db.collection("rooms").document(room_name_clean)
-            if room_ref.get().exists:
-                st.warning("Room already exists.")
+def channel_interface():
+    st.subheader("📢 Create or Join a Channel (WhatsApp Style)")
+    channel_name = st.text_input("Channel Name")
+    channel_desc = st.text_area("Channel Description")
+
+    if st.button("Create Channel"):
+        if channel_name:
+            channel_id = channel_name.strip().lower()
+            channel_ref = db.collection("channels").document(channel_id)
+            if channel_ref.get().exists:
+                st.warning("Channel already exists.")
             else:
                 try:
-                    room_ref.set({
+                    channel_ref.set({
+                        "name": channel_name,
+                        "description": channel_desc,
                         "created_by": st.session_state.username,
                         "created_at": datetime.now(),
-                        "participants": [st.session_state.username]
+                        "followers": [st.session_state.username]
                     })
-                    st.success(f"Room '{room_name_clean}' created!")
+                    st.success(f"Channel '{channel_name}' created!")
                 except Exception as e:
                     st.error(f"Error: {e}")
         else:
-            st.error("Please enter a room name.")
+            st.error("Please enter a channel name.")
 
-    st.markdown("### 🌍 Available Rooms")
-    rooms = db.collection("rooms").stream()
-    room_list = []
-    for r in rooms:
-        data = r.to_dict()
-        room_list.append(r.id)
-        st.markdown(f"- **{r.id}** (by {data.get('created_by', 'unknown')}) | Participants: {', '.join(data.get('participants', []))}")
-    if room_list:
-        selected_room = st.selectbox("Join a room", room_list)
-        if st.button("Join Selected Room"):
-            room_ref = db.collection("rooms").document(selected_room)
-            room_ref.update({"participants": firestore.ArrayUnion([st.session_state.username])})
-            room_doc = room_ref.get()
-            participants = room_doc.to_dict().get("participants", [])
-            st.markdown(f"**Participants:** {', '.join(participants)}")
-            st.markdown(f"""
-            <iframe src="https://meet.jit.si/{selected_room}" width="100%" height="500" allow="camera; microphone; fullscreen" style="border:0;"></iframe>
-            """, unsafe_allow_html=True)
-            st.info(f"You are in room: {selected_room}")
-        # Room deletion for creator
-        room_ref = db.collection("rooms").document(selected_room)
-        room_doc = room_ref.get()
-        if room_doc.exists and room_doc.to_dict().get("created_by") == st.session_state.username:
-            if st.button("Delete Room"):
-                room_ref.delete()
-                st.success("Room deleted. Please refresh.")
+    st.markdown("### 🔍 Browse Channels")
+    channels = db.collection("channels").stream()
+    available_channels = []
+    for c in channels:
+        data = c.to_dict()
+        available_channels.append(c.id)
+        st.markdown(f"**{data['name']}** — {data.get('description', '')}  ")
+
+    if available_channels:
+        selected_channel = st.selectbox("Select a channel to follow/view", available_channels)
+        channel_ref = db.collection("channels").document(selected_channel)
+        channel_doc = channel_ref.get()
+        if channel_doc.exists:
+            data = channel_doc.to_dict()
+            st.info(f"Channel by: {data['created_by']}")
+            st.markdown(f"### 📄 Description\n{data.get('description', 'No description')}")
+
+            # Follow channel
+            if st.session_state.username not in data.get("followers", []):
+                if st.button("Follow Channel"):
+                    channel_ref.update({"followers": firestore.ArrayUnion([st.session_state.username])})
+                    st.success("You are now following this channel.")
+
+            # Creator can post messages
+            if st.session_state.username == data.get("created_by"):
+                message = st.text_input("Post a message to followers")
+                if st.button("Send Broadcast") and message.strip():
+                    db.collection("channels").document(selected_channel).collection("messages").add({
+                        "text": message.strip(),
+                        "timestamp": datetime.now()
+                    })
+                    st.success("Message sent!")
+
+            # Show messages
+            st.markdown("### 💬 Channel Messages")
+            messages = db.collection("channels").document(selected_channel).collection("messages").order_by("timestamp").stream()
+            for msg in messages:
+                d = msg.to_dict()
+                ts = d['timestamp'].strftime('%Y-%m-%d %H:%M')
+                st.markdown(f"🕒 **{ts}**: {d['text']}")
     else:
-        st.info("No rooms available. Create one above!")
+        st.info("No channels yet. Create one above!")
+
 
 # ---------------- NOTIFICATIONS ----------------
 def show_notifications():
