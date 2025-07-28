@@ -5,3 +5,4 @@ gtts
 deep-translator
 Pillow
 python-dotenv
+google-generativeai
