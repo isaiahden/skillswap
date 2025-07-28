@@ -151,7 +151,7 @@ def view_profiles():
 
 # ---------------- CHAT ----------------
 def chat_interface():
-    st.subheader("💬 WhatsApp-Style Chat")
+    st.subheader("💬 Chat with friends")
 
     # Select chat partner
     if "chat_partner" not in st.session_state:
