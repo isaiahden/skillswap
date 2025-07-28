@@ -442,7 +442,7 @@ def channel_interface():
                             "followers": [st.session_state.username]
                         })
                         st.success("Channel created!")
-                        st.experimental_rerun()
+                        st.rerun()
 
         # If a channel is selected
         if selected:
