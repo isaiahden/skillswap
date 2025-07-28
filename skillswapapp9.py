@@ -3,6 +3,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 import json
+import google.generativeai as genai
+from google.generativeai.types.content_types import TextPart
+from gtts import gTTS
+import base64
 import hashlib
 
 # ---------------- FIREBASE SETUP ----------------
@@ -10,6 +14,7 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
     firebase_admin.initialize_app(cred)
 db = firestore.client()
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # ---------------- AI TEACHERS ----------------
 AI_TEACHERS = [
@@ -216,26 +221,28 @@ def booking_interface():
 
     # Launch AI chat if requested
 # ---------------- REAL-TIME STYLE AI CHAT ----------------
+# --- Real-Time Gemini Chat Section ---
     if "active_ai_teacher" in st.session_state:
         ai_teacher_name = st.session_state["active_ai_teacher"]
         ai_skill = st.session_state["active_ai_skill"]
         ai_avatar = st.session_state["active_ai_avatar"]
-        
+        chat_id = f"{st.session_state.username}_{ai_teacher_name}"
+    
         st.markdown(f"### 🤖 Chat with {ai_teacher_name} ({ai_skill})")
         st.image(ai_avatar, width=60)
     
-        # Initialize chat history
-        if "ai_chat_history" not in st.session_state:
-            st.session_state["ai_chat_history"] = []
+        # Load previous messages from Firestore
+        messages_ref = db.collection("ai_chats").document(chat_id).collection("messages").order_by("timestamp")
+        history = messages_ref.stream()
+        st.session_state["ai_chat_history"] = [{"sender": h.to_dict()["sender"], "text": h.to_dict()["text"]} for h in history]
     
-        # Display message history like a real chat
-        for i, msg in enumerate(st.session_state["ai_chat_history"]):
+        # Display messages
+        for msg in st.session_state["ai_chat_history"]:
             is_user = msg["sender"] == "user"
             bubble_color = "#4CAF50" if is_user else "#444"
-            text_color = "white"
             align = "right" if is_user else "left"
             st.markdown(f"""
-            <div style="background-color:{bubble_color}; color:{text_color}; padding:8px 12px;
+            <div style="background-color:{bubble_color}; color:white; padding:8px 12px;
                         border-radius:12px; margin:4px 0; max-width:70%; float:{align}; clear:both;">
                 <b>{'You' if is_user else ai_teacher_name}:</b><br>{msg['text']}
             </div>
@@ -243,19 +250,38 @@ def booking_interface():
     
         st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
     
-        # Message input
-        user_msg = st.text_input("Type your message", key="ai_chat_input")
+        # Input message
+        user_msg = st.text_input("Your message", key="ai_chat_input")
     
         if st.button("Send to AI"):
             if user_msg.strip():
-                # Add user message to chat
-                st.session_state["ai_chat_history"].append({"sender": "user", "text": user_msg})
+                # Save user message
+                db.collection("ai_chats").document(chat_id).collection("messages").add({
+                    "sender": "user",
+                    "text": user_msg,
+                    "timestamp": datetime.now()
+                })
     
-                # Fake AI reply (replace with real API later)
-                ai_reply = f"I received your message: '{user_msg}' and I’ll help you with {ai_skill.lower()}!"
-                st.session_state["ai_chat_history"].append({"sender": "ai", "text": ai_reply})
+                # Get reply from Gemini
+                try:
+                    model = genai.GenerativeModel("gemini-pro")
+                    chat = model.start_chat(history=[
+                        TextPart(m["text"]) if m["sender"] == "user" else TextPart(f"{ai_teacher_name}: {m['text']}")
+                        for m in st.session_state["ai_chat_history"]
+                    ])
+                    gemini_response = chat.send_message(user_msg).text
     
-                st.rerun()  # Refresh to show new messages
+                    # Save AI message
+                    db.collection("ai_chats").document(chat_id).collection("messages").add({
+                        "sender": "ai",
+                        "text": gemini_response,
+                        "timestamp": datetime.now()
+                    })
+    
+                    st.experimental_rerun()
+    
+                except Exception as e:
+                    st.error(f"Gemini Error: {e}")
 
 
 # ---------------- ROOMS ----------------
