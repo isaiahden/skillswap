@@ -7,7 +7,7 @@ import google.generativeai as genai
 from gtts import gTTS
 import base64
 import hashlib
-
+import os
 # ---------------- FIREBASE SETUP ----------------
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
