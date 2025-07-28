@@ -44,6 +44,8 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def get_user_data(username):
+    if not username or not username.strip():
+        return None
     user_ref = db.collection("users").document(username).get()
     return user_ref.to_dict() if user_ref.exists else None
 
@@ -78,6 +80,8 @@ def signup_page():
     if st.button("Sign Up"):
         if not username.strip():
             st.error("Username cannot be empty.")
+        elif not password:
+            st.error("Password cannot be empty.")
         elif get_user_data(username):
             st.error("Username already taken")
         else:
