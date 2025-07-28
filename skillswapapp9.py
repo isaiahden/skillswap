@@ -305,7 +305,12 @@ def booking_interface():
                     st.experimental_rerun()
 
                 except Exception as e:
-                    st.error(f"Gemini Error: {e}")
+                    error_msg = str(e)
+                    if "quota" in error_msg.lower() or "429" in error_msg:
+                        st.warning("⚠️ AI is temporarily unavailable due to usage limits. Please try again in a few minutes.")
+                    else:
+                        st.warning("⚠️ AI is currently unavailable. Please try again later.")
+
 
 
 
