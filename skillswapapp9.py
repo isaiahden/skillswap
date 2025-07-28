@@ -183,32 +183,58 @@ def chat_interface():
         st.markdown(f"**From {d['from']}** ({time_str}): {d['text']}")
 
 # ---------------- VIDEO ----------------
-def video_interface():
-    st.subheader("🎥 Video Room (Zoom Style with Jitsi)")
+def video_room_interface():
+    st.subheader("🎥 Create or Join a Video Room")
 
-    room_name = f"{st.session_state.username}-room"
-    st.markdown("Share this room name with others to join together.")
+    # ---------------- CREATE ROOM ----------------
+    new_room_name = st.text_input("Create New Room (give it a name):", key="create_room_input")
+    if st.button("Create Room"):
+        if new_room_name:
+            room_id = new_room_name.strip().lower()
+            room_ref = db.collection("live_rooms").document(room_id)
+            if room_ref.get().exists:
+                st.warning("Room already exists.")
+            else:
+                room_ref.set({
+                    "created_by": st.session_state.username,
+                    "created_at": datetime.now(),
+                    "active": True
+                })
+                st.session_state["current_room"] = room_id
+                st.success(f"Room '{room_id}' created. You're now live!")
 
-    if "in_room" not in st.session_state:
-        st.session_state["in_room"] = False
+    # ---------------- SHOW LIVE ROOMS ----------------
+    st.markdown("### 🌐 Available Live Rooms")
+    live_rooms = db.collection("live_rooms").where("active", "==", True).stream()
+    room_list = []
+    for room in live_rooms:
+        room_data = room.to_dict()
+        room_list.append(room.id)
+        st.markdown(f"- **{room.id}** (hosted by {room_data.get('created_by', 'Unknown')})")
 
-    if not st.session_state["in_room"]:
-        if st.button("Join Video Room"):
-            st.session_state["in_room"] = True
-    else:
-        if st.button("Leave Room"):
-            st.session_state["in_room"] = False
+    # ---------------- JOIN ROOM ----------------
+    selected_room = st.selectbox("Join a Live Room", room_list, key="join_room_select")
+    if st.button("Join Room"):
+        st.session_state["current_room"] = selected_room
+        st.success(f"You joined room '{selected_room}'")
 
-    if st.session_state["in_room"]:
+    # ---------------- VIDEO CALL IFRAME ----------------
+    if "current_room" in st.session_state:
+        room = st.session_state["current_room"]
+        st.markdown(f"### ✅ You are in: **{room}**")
         st.markdown(f"""
         <iframe
-            src="https://meet.jit.si/{room_name}#userInfo.displayName='{st.session_state.username}'"
+            src="https://meet.jit.si/{room}#userInfo.displayName='{st.session_state.username}'"
             style="height: 600px; width: 100%; border: 0px;"
             allow="camera; microphone; fullscreen; display-capture"
         ></iframe>
         """, unsafe_allow_html=True)
-        st.info("✅ You're now in the video room.")
 
+        if st.button("Leave Room"):
+            if db.collection("live_rooms").document(room).get().to_dict().get("created_by") == st.session_state.username:
+                db.collection("live_rooms").document(room).update({"active": False})
+            del st.session_state["current_room"]
+            st.success("You left the room.")
 
 
 # ---------------- BOOKING (AI ONLY) ----------------
