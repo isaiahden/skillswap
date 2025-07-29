@@ -164,7 +164,7 @@ def chat_interface():
                 "sender":st.session_state.username,"receiver":partner,
                 "text":txt.strip(),"timestamp":datetime.now()
             })
-            st.experimental_rerun()
+            st.rerun()
 
 def video_room_interface():
     st.markdown("<div class='chat-header'><h4>🎥 Video Rooms</h4></div>", unsafe_allow_html=True)
@@ -238,7 +238,7 @@ def booking_interface():
                     db.collection("ai_chats").document(chat_id).collection("messages").add({
                         "sender":"ai","text":resp.text,"timestamp":datetime.now()
                     })
-                    st.experimental_rerun()
+                    st.rerun()
                 except Exception as e:
                     st.error("AI Error: "+str(e))
 
