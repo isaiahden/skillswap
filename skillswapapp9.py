@@ -272,24 +272,24 @@ else:
     section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
     st.sidebar.markdown("---")
     
-if st.sidebar.button("Logout"):
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.rerun()
-
-    # Render only the selected section
-if section == "💬 Chat":
-    chat_interface()
-elif section == "🧑‍💻 Profiles":
-    view_profiles()
-elif section == "📅 Booking":
-    booking_interface()
-elif section == "🚪 Rooms":
-    channel_interface()
-elif section == "👤 Profile":
-    profile_edit()
-elif section == "🔔 Notifications":
-    show_notifications()
-
-st.markdown("---")
-st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+    
+        # Render only the selected section
+    if section == "💬 Chat":
+        chat_interface()
+    elif section == "🧑‍💻 Profiles":
+        view_profiles()
+    elif section == "📅 Booking":
+        booking_interface()
+    elif section == "🚪 Rooms":
+        channel_interface()
+    elif section == "👤 Profile":
+        profile_edit()
+    elif section == "🔔 Notifications":
+        show_notifications()
+    
+    st.markdown("---")
+    st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
