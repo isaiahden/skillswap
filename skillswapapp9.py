@@ -523,7 +523,7 @@ def channel_interface():
                         db.collection("channels").document(selected["id"]).collection("messages").document(m.id).update({
                             "reactions": firestore.ArrayUnion([f"{emoji_icon} by {st.session_state.username}"])
                         })
-                        st.experimental_rerun()
+                        st.rerun()
 
             st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
 
