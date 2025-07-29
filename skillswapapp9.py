@@ -69,51 +69,79 @@ st.markdown("""
     color: white !important;
 }
 
-/* Force ALL text to be white and visible */
-* {
-    color: white !important;
+/* Desktop-specific improvements */
+@media (min-width: 768px) {
+    /* Force ALL text to be white with better rendering on desktop */
+    * {
+        color: white !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        text-rendering: optimizeLegibility !important;
+    }
+    
+    /* Input fields - Desktop optimized */
+    .stTextInput > div > div > input,
+    .stTextArea > div > textarea,
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    textarea {
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        color: white !important;
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    /* Radio button text - Desktop specific */
+    .stRadio label,
+    .stRadio > div,
+    .stRadio * {
+        color: white !important;
+        font-weight: 700 !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+        font-size: 16px !important;
+    }
 }
 
-/* Input fields - Much stronger contrast */
-.stTextInput > div > div > input,
-.stTextArea > div > textarea,
-input[type="text"],
-input[type="password"],
-input[type="email"],
-textarea {
-    background-color: rgba(0, 0, 0, 0.4) !important;
-    color: white !important;
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 6px !important;
-    font-weight: 500 !important;
-    font-size: 16px !important;
+/* Mobile styles (keep current behavior) */
+@media (max-width: 767px) {
+    * {
+        color: white !important;
+    }
+    
+    .stTextInput > div > div > input,
+    .stTextArea > div > textarea,
+    input, textarea {
+        background-color: rgba(0, 0, 0, 0.4) !important;
+        color: white !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        font-weight: 500 !important;
+    }
 }
 
-/* Placeholder text */
+/* Universal improvements */
 input::placeholder,
 textarea::placeholder {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-weight: 400 !important;
-}
-
-/* Radio button text */
-.stRadio label,
-.stRadio > div,
-.stRadio * {
-    color: white !important;
-    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 500 !important;
 }
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
     color: white !important;
     font-weight: bold !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Labels */
 label {
     color: white !important;
     font-weight: 600 !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Buttons */
@@ -123,20 +151,11 @@ label {
     font-weight: bold;
     border-radius: 6px;
     border: none;
+    text-shadow: none !important;
 }
 
 .stButton > button:hover {
     background-color: rgba(21, 128, 61, 1.0);
-}
-
-/* Text areas and markdown */
-.stMarkdown {
-    color: white !important;
-}
-
-/* Selectbox */
-.stSelectbox * {
-    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
