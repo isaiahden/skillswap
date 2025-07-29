@@ -476,7 +476,71 @@ def channel_interface():
                             "text": message.strip(),
                             "sender": st.session_state.username,
                             "timestamp": datetime.now(),
+                            "reactions": []
+                        })
+                        st.success("Message sent.")
+                        st.experimental_rerun()
+
+            # Typing indicator
+            typing_ref = db.collection("channels").document(selected["id"]).collection("typing").document("status")
+            typing_ref.set({"typing": st.session_state.username}, merge=True)
+
+            typing_data = typing_ref.get().to_dict()
+            if typing_data and typing_data.get("typing") != st.session_state.username:
+                st.markdown(f"💬 *{typing_data['typing']} is typing...*")
+
+            # Show messages (WhatsApp-style bubbles + reactions)
+            st.markdown("### 💬 Messages")
+            msgs = db.collection("channels").document(selected["id"]).collection("messages") \
+                .order_by("timestamp").stream()
+
+            for m in msgs:
+                d = m.to_dict()
+                sender = d.get("sender", "Unknown")
+                text = d.get("text", "")
+                timestamp = d.get("timestamp")
+                reactions = d.get("reactions", [])
+                is_me = sender == st.session_state.username
+                align = "right" if is_me else "left"
+                color = "#dcf8c6" if is_me else "#fff"
+                time = timestamp.strftime("%b %d %H:%M") if timestamp else "Unknown time"
+
+                st.markdown(f"""
+                <div style='background-color:{color}; padding:10px; margin:6px 0; 
+                            border-radius:10px; max-width:70%; float:{align}; clear:both;
+                            box-shadow:0 2px 5px rgba(0,0,0,0.1);'>
+                    <b>{'You' if is_me else sender}</b><br>
+                    {text}<br>
+                    <small style='color:gray;'>{time}</small><br>
+                    <span style='font-size: 16px;'>👍 ❤️ 😂 😢</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Reaction buttons (with Firestore update)
+                cols = st.columns(4)
+                for i, emoji_icon in enumerate(["👍", "❤️", "😂", "😢"]):
+                    if cols[i].button(emoji_icon, key=f"react_{m.id}_{emoji_icon}"):
+                        db.collection("channels").document(selected["id"]).collection("messages").document(m.id).update({
+                            "reactions": firestore.ArrayUnion([f"{emoji_icon} by {st.session_state.username}"])
+                        })
+                        st.experimental_rerun()
+
+            st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
+
+            # Typing input (will also trigger typing status)
+            user_input = st.text_input("Type your message here", key="channel_chat_input")
+            if st.button("Send Message") and user_input.strip():
+                import emoji
+                user_input = emoji.emojize(user_input, language='alias')
+                db.collection("channels").document(selected["id"]).collection("messages").add({
+                    "text": user_input.strip(),
+                    "sender": st.session_state.username,
+                    "timestamp": datetime.now(),
+                    "reactions": []
+                })
+                typing_ref.set({"typing": ""})  # Clear typing
                 st.rerun()
+
 
 
 # ---------------- NOTIFICATIONS ----------------
