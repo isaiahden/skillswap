@@ -160,6 +160,41 @@ label {
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+/* Sidebar background - Dark blue with rgba */
+.css-1d391kg, 
+.st-emotion-cache-16idsys,
+section[data-testid="stSidebar"] {
+    background-color: rgba(30, 58, 138, 1) !important; /* Dark blue */
+}
+
+section[data-testid="stSidebar"] > div {
+    background-color: rgba(30, 58, 138, 0.95) !important; /* Dark blue with slight transparency */
+}
+
+/* Alternative rgba dark blue options - choose one */
+/* background-color: rgba(30, 64, 175, 0.95) !important; */ /* Slightly lighter blue */
+/* background-color: rgba(29, 78, 216, 0.95) !important; */ /* Medium blue */
+/* background-color: rgba(15, 23, 42, 0.95) !important; */ /* Very dark blue-gray - matches main */
+/* background-color: rgba(30, 41, 59, 0.95) !important; */ /* Dark slate blue */
+/* background-color: rgba(12, 74, 110, 0.95) !important; */ /* Dark cyan-blue */
+
+/* Sidebar content text to remain white */
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+/* Your existing styles... */
+.stApp {
+    background-color: rgba(15, 23, 42, 0.95);
+    color: white !important;
+}
+
+/* Rest of your existing CSS... */
+</style>
+""", unsafe_allow_html=True)
+
 
 # ---------------- SESSION ----------------
 st.set_page_config(page_title="SkillSwap Cloud", layout="wide")
