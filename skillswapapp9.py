@@ -424,6 +424,7 @@ def channel_interface():
         else:
             selected_channel = st.radio("Choose a Channel", [f"{c['name']} - by {c['created_by']}" for c in channel_data], key="channel_selector")
             selected = next((c for c in channel_data if f"{c['name']} - by {c['created_by']}" == selected_channel), None)
+
     with col2:
         # Create new channel
         with st.expander("➕ Create New Channel"):
@@ -466,44 +467,16 @@ def channel_interface():
             # Broadcast form (only creator)
             if st.session_state.username == selected["created_by"]:
                 with st.form(key="broadcast_form"):
-                    message = st.text_input("Broadcast Message")
+                    message = st.text_input("Broadcast Message (supports emoji like :smile:)")
                     send = st.form_submit_button("Send")
                     if send and message.strip():
+                        import emoji
+                        message = emoji.emojize(message, language='alias')
                         db.collection("channels").document(selected["id"]).collection("messages").add({
                             "text": message.strip(),
                             "sender": st.session_state.username,
-                            "timestamp": datetime.now()
-                        })
-                        st.success("Message sent.")
-                        st.experimental_rerun()
-
-            # Show messages (WhatsApp-style bubbles)
-            # Show messages (WhatsApp-style bubbles)
-            st.markdown("### 💬 Messages")
-            msgs = db.collection("channels").document(selected["id"]).collection("messages") \
-                .order_by("timestamp").stream()
-            for m in msgs:
-                d = m.to_dict()
-                sender = d.get("sender", "Unknown")
-                text = d.get("text", "")
-                timestamp = d.get("timestamp")
-                is_me = sender == st.session_state.username
-                align = "right" if is_me else "left"
-                color = "#dcf8c6" if is_me else "#fff"
-                time = timestamp.strftime("%b %d %H:%M") if timestamp else "Unknown time"
-            
-                st.markdown(f"""
-                <div style='background-color:{color}; padding:10px; margin:6px 0; 
-                            border-radius:10px; max-width:70%; float:{align}; clear:both;
-                            box-shadow:0 2px 5px rgba(0,0,0,0.1);'>
-                    <b>{'You' if is_me else sender}</b><br>
-                    {text}<br>
-                    <small style='color:gray;'>{time}</small>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
-
+                            "timestamp": datetime.now(),
+                st.rerun()
 
 
 # ---------------- NOTIFICATIONS ----------------
