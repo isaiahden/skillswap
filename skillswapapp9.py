@@ -190,10 +190,10 @@ def password_reset():
 
 def signup_page():
     st.subheader("📝 Sign Up")
-    u = st.text_input("Username")
-    email = st.text_input("Email")
-    p = st.text_input("Password", type="password")
-    if st.button("Send Verification Code"):
+    u = st.text_input("Username", key="signup_username")
+    email = st.text_input("Email", key="signup_email")
+    p = st.text_input("Password", type="password", key="signup_password")
+    if st.button("Send Verification Code", key="signup_send_code"):
         if not u or not email or not p:
             st.error("All fields required.")
         elif get_user_data(u):
@@ -211,10 +211,10 @@ def signup_page():
                 st.session_state.signup_user = u
                 st.success("Code sent. Enter below.")
 
-if "signup_user" in st.session_state:
+    if "signup_user" in st.session_state:
         st.info(f"Verify account for {st.session_state.signup_user}")
-        input_code = st.text_input("Verification Code")
-        if st.button("Verify"):
+        input_code = st.text_input("Verification Code", key="signup_verification_code")
+        if st.button("Verify", key="signup_verify_button"):
             doc = db.collection("email_verifications").document(st.session_state.signup_user).get()
             if doc.exists:
                 data = doc.to_dict()
@@ -229,6 +229,7 @@ if "signup_user" in st.session_state:
                     del st.session_state.signup_user
                 else:
                     st.error("Incorrect code.")
+
 
 st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
 if "logged_in" not in st.session_state:
