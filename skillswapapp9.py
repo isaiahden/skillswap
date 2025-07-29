@@ -27,6 +27,17 @@ if not api_key:
     st.error("❌ Gemini API key not found in secrets or environment variable.")
 else:
     genai.configure(api_key=api_key)
+    
+st.markdown("""
+<style>
+/* Force radio button label text to white for visibility */
+[data-baseweb="radio"] label {
+    color: white !important;
+    font-weight: 600;
+    font-size: 16px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -49,13 +60,6 @@ h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
     color: white;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Force radio button label text to white for visibility */
-[data-baseweb="radio"] label {
-    color: white !important;
-    font-weight: 600;
-    font-size: 16px;
 }
 
 /* Buttons */
