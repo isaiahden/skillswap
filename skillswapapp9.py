@@ -107,20 +107,6 @@ def send_email_otp(receiver_email, otp_code):
         st.error(f"Failed to send OTP: {e}")
         return False
 
-def send_password_reset_otp(email):
-    code = generate_otp()
-    timestamp = datetime.utcnow()
-    try:
-        db.collection("reset_otps").document(email).set({
-            "code": code,
-            "timestamp": timestamp.isoformat()
-        })
-        return send_email_otp(email, code)
-    except Exception as e:
-        st.error("Failed to generate OTP.")
-        st.exception(e)
-        return False
-
 def verify_reset_otp(email, entered_code):
     doc = db.collection("reset_otps").document(email).get()
     if doc.exists:
