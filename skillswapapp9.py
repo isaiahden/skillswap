@@ -90,21 +90,24 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 .clearfix::after{content:'';clear:both;display:table;}
 </style>
 """, unsafe_allow_html=True)
+
 def send_password_reset(email):
     try:
-        link = auth.generate_password_reset_link(email)
-        st.success("📧 Password reset link sent!")
-        st.markdown(f"[Click here if email doesn’t arrive]({link})")
+        action_code_settings = auth.ActionCodeSettings(
+            url="https://skillswap-worldwide.streamlit.app",  # 🔁 Replace with your actual app URL
+            handle_code_in_app=False
+        )
+        link = auth.generate_password_reset_link(email, action_code_settings)
+        st.success("📧 Password reset link generated!")
+        st.markdown(f"[Click here to reset your password]({link})")
     except Exception as e:
         st.error("❌ Failed to send reset link.")
         st.exception(e)
-        
-# === AUTH UI ===
+
 def login_page():
     st.subheader("🔐 Login")
     u = st.text_input("Username", key="login_user")
     p = st.text_input("Password", type="password", key="login_pass")
-
     if st.button("Login"):
         d = get_user_data(u)
         if d and d.get("password") == hash_password(p):
@@ -114,22 +117,20 @@ def login_page():
             st.rerun()
         else:
             st.error("Invalid credentials.")
-
-    # Forgot password section
-    with st.expander("🔒 Forgot Password?"):
-        email = st.text_input("Enter your email", key="reset_email")
-        if st.button("Send Reset Link"):
-            send_password_reset(email)
-
+    if st.button("Forgot Password?"):
+        d = get_user_data(u)
+        if d and d.get("email"):
+            send_password_reset(d["email"])
+        else:
+            st.error("No email found for this user.")
 
 def signup_page():
     st.subheader("📝 Sign Up")
     u = st.text_input("New Username", key="signup_user")
     email = st.text_input("Email Address", key="signup_email")
     p = st.text_input("New Password", type="password", key="signup_pass")
-    role = st.selectbox("Role", ["Student","Teacher"])
+    role = st.selectbox("Role", ["Student", "Teacher"])
     bio = st.text_area("Bio")
-
     if st.button("Sign Up"):
         if not u.strip() or not p or not email.strip():
             st.error("All fields required.")
@@ -145,6 +146,7 @@ def signup_page():
                 "notifications": []
             })
             st.success("Account created. Please log in.")
+
 
 
 # === INTERFACE FUNCTIONS ===
