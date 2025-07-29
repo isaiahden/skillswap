@@ -51,6 +51,12 @@ h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Fix for dark background radio visibility */
+.stRadio > label {
+    color: white !important;
+    font-weight: 500;
+}
+
 /* Buttons */
 .stButton > button {
     background-color: rgba(34, 197, 94, 0.9); /* Green */
