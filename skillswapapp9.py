@@ -14,19 +14,32 @@ import hashlib
 import os
             
 # ---------------- FIREBASE SETUP ----------------
-if not firebase_admin._apps:
-    cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
-    firebase_admin.initialize_app(cred)
+try:
+    if not firebase_admin._apps:
+        # Try to get Firebase credentials from secrets
+        if "FIREBASE" in st.secrets:
+            cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
+            firebase_admin.initialize_app(cred)
+        else:
+            st.error("❌ Firebase credentials not found in secrets. Please configure FIREBASE in your secrets.")
+            st.stop()
 
-# Always set db after Firebase is initialized (even if it was already initialized)
-db = firestore.client()
+    # Always set db after Firebase is initialized (even if it was already initialized)
+    db = firestore.client()
+except Exception as e:
+    st.error(f"❌ Firebase initialization failed: {e}")
+    st.info("Please ensure your Firebase credentials are properly configured in secrets.")
+    st.stop()
 
 # Always configure Gemini API (even on rerun)
-api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-if not api_key:
-    st.error("❌ Gemini API key not found in secrets or environment variable.")
-else:
-    genai.configure(api_key=api_key)
+try:
+    api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if api_key:
+        genai.configure(api_key=api_key)
+    else:
+        st.warning("⚠️ Gemini API key not configured. AI chat features will be limited.")
+except Exception as e:
+    st.warning("⚠️ Gemini API configuration failed. AI chat features will be limited.")
 
 # === STREAMLIT NATIVE STYLING ===
 st.markdown("""
@@ -123,8 +136,13 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 def send_email_otp(receiver_email, otp_code):
-    sender_email = st.secrets["EMAIL_SENDER"]
-    sender_password = st.secrets["EMAIL_PASSWORD"]
+    try:
+        sender_email = st.secrets["EMAIL_SENDER"]
+        sender_password = st.secrets["EMAIL_PASSWORD"]
+    except KeyError:
+        # Email secrets not configured - simulate email sending for demo
+        st.info(f"📧 Demo Mode: Your verification code is **{otp_code}** (Email service not configured)")
+        return True
 
     msg = MIMEText(f"Your SkillSwap verification code is: {otp_code}")
     msg['Subject'] = "SkillSwap OTP Verification"
@@ -625,14 +643,20 @@ def booking_interface():
                     
                     # Generate AI response
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-pro-latest")
-                        prompt = f"You are {st.session_state.active_ai_teacher}, an expert in {st.session_state.active_ai_skill}. Respond helpfully to this student question: {user_message}"
-                        response = model.generate_content(prompt)
+                        # Check if Gemini API is configured
+                        api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+                        if not api_key:
+                            ai_response = f"Hello! I'm {st.session_state.active_ai_teacher}, your {st.session_state.active_ai_skill} instructor. I'd love to help you, but the AI service is currently not configured. This is a demo response to your message: '{user_message}'"
+                        else:
+                            model = genai.GenerativeModel("gemini-1.5-pro-latest")
+                            prompt = f"You are {st.session_state.active_ai_teacher}, an expert in {st.session_state.active_ai_skill}. Respond helpfully to this student question: {user_message}"
+                            response = model.generate_content(prompt)
+                            ai_response = response.text
                         
                         # Save AI response
                         db.collection("ai_chats").document(chat_id).collection("messages").add({
                             "sender": "ai",
-                            "text": response.text,
+                            "text": ai_response,
                             "timestamp": datetime.now()
                         })
                         
@@ -640,6 +664,14 @@ def booking_interface():
                         
                     except Exception as e:
                         st.error(f"AI Error: {str(e)}")
+                        # Add fallback response
+                        fallback_response = f"I apologize, but I'm having technical difficulties right now. As your {st.session_state.active_ai_skill} instructor, I'd normally provide detailed help with your question: '{user_message}'. Please try again later!"
+                        db.collection("ai_chats").document(chat_id).collection("messages").add({
+                            "sender": "ai",
+                            "text": fallback_response,
+                            "timestamp": datetime.now()
+                        })
+                        st.rerun()
     
     # Display user's bookings
     st.markdown("---")
