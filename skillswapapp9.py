@@ -408,11 +408,11 @@ def channel_interface():
     st.markdown("""
         <style>
         body {
-            background-color: #F6F9FC;
+            background-color: rgba(255, 255, 255, 1);
             font-family: 'Inter', sans-serif;
         }
         .title-block {
-            background-color: #1E1E2F;
+            background-color: rgba(30, 30, 47, 1);
             padding: 15px;
             border-radius: 10px;
             color: white;
@@ -425,13 +425,13 @@ def channel_interface():
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .from-user {
-            background-color: #0052CC;
+            background-color: rgba(0, 82, 204, 1);
             color: white;
             float: right;
             clear: both;
         }
         .from-others {
-            background-color: #E3E8F0;
+            background-color: rgba(227, 232, 240, 1);
             color: black;
             float: left;
             clear: both;
@@ -442,12 +442,12 @@ def channel_interface():
         }
         .typing-indicator {
             font-style: italic;
-            color: #777;
+            color: rgba(119, 119, 119, 1);
         }
         .read-receipt {
             font-size: 11px;
             float: right;
-            color: #999;
+            color: rgba(153, 153, 153, 1);
         }
         </style>
     """, unsafe_allow_html=True)
@@ -584,8 +584,6 @@ def channel_interface():
                 })
                 typing_ref.set({"typing": ""})
                 st.rerun()
-
-
 
 
 # ---------------- NOTIFICATIONS ----------------
