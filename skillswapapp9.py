@@ -28,6 +28,42 @@ if not api_key:
 else:
     genai.configure(api_key=api_key)
 
+st.markdown("""
+<style>
+.stApp {
+    background-color: rgba(15, 32, 39, 0.95);  /* Dark bluish with 95% opacity */
+    background-image: linear-gradient(
+        135deg,
+        rgba(32, 58, 67, 0.9),
+        rgba(44, 83, 100, 0.9)
+    );
+    background-attachment: fixed;
+    background-size: cover;
+    color: white;
+}
+
+.stTextInput > div > div > input,
+.stTextArea > div > textarea {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stButton > button {
+    background-color: rgba(76, 175, 80, 0.85);
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+.stButton > button:hover {
+    background-color: rgba(56, 142, 60, 0.95);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # ---------------- SESSION ----------------
 st.set_page_config(page_title="SkillSwap Cloud", layout="wide")
 if "logged_in" not in st.session_state:
