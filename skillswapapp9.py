@@ -51,10 +51,11 @@ h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Fix for dark background radio visibility */
-.stRadio > label {
+/* Force radio button label text to white for visibility */
+[data-baseweb="radio"] label {
     color: white !important;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 16px;
 }
 
 /* Buttons */
