@@ -1,6 +1,7 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
+from firebase_admin import auth
 from datetime import datetime
 import json
 import google.generativeai as genai
@@ -95,33 +96,48 @@ def login_page():
     st.subheader("🔐 Login")
     u = st.text_input("Username", key="login_user")
     p = st.text_input("Password", type="password", key="login_pass")
+
     if st.button("Login"):
         d = get_user_data(u)
-        if d and d.get("password")==hash_password(p):
-            st.session_state.logged_in=True
-            st.session_state.username=u
+        if d and d.get("password") == hash_password(p):
+            st.session_state.logged_in = True
+            st.session_state.username = u
             st.success(f"Logged in as {u}")
             st.rerun()
         else:
             st.error("Invalid credentials.")
 
+    # Forgot password section
+    with st.expander("🔒 Forgot Password?"):
+        email = st.text_input("Enter your email", key="reset_email")
+        if st.button("Send Reset Link"):
+            send_password_reset(email)
+
+
 def signup_page():
     st.subheader("📝 Sign Up")
     u = st.text_input("New Username", key="signup_user")
+    email = st.text_input("Email Address", key="signup_email")
     p = st.text_input("New Password", type="password", key="signup_pass")
     role = st.selectbox("Role", ["Student","Teacher"])
     bio = st.text_area("Bio")
+
     if st.button("Sign Up"):
-        if not u.strip() or not p:
+        if not u.strip() or not p or not email.strip():
             st.error("All fields required.")
         elif get_user_data(u):
             st.error("Username already taken.")
         else:
             db.collection("users").document(u).set({
-                "password":hash_password(p),
-                "role":role,"bio":bio,"skills":[],"notifications":[]
+                "email": email,
+                "password": hash_password(p),
+                "role": role,
+                "bio": bio,
+                "skills": [],
+                "notifications": []
             })
             st.success("Account created. Please log in.")
+
 
 # === INTERFACE FUNCTIONS ===
 def profile_edit():
