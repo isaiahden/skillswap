@@ -381,9 +381,14 @@ def channel_interface():
 
 # === MAIN ===
 if not st.session_state.logged_in:
-    col1, col2 = st.columns(2)
-    with col1: login_page()
-    with col2: signup_page()
+    option = st.radio("Choose Option", ["🔐 Login", "📝 Sign Up", "🔑 Forgot Password"], key="auth_radio")
+
+    if option == "🔐 Login":
+        login_page()
+    elif option == "📝 Sign Up":
+        signup_page()
+    elif option == "🔑 Forgot Password":
+        password_reset()
 else:
     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
 
