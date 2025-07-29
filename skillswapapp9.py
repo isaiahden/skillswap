@@ -191,7 +191,7 @@ def password_reset():
 
 def signup_page():
     st.subheader("📝 Sign Up")
-    u = st.text_input("Username", key="signup_username")
+    u = st.text_input("Username", key="signup_username_input")
     email = st.text_input("Email", key="signup_email")
     p = st.text_input("Password", type="password", key="signup_password")
     if st.button("Send Verification Code", key="signup_send_code"):
