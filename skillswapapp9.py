@@ -128,12 +128,19 @@ def profile_edit():
     d = get_user_data(st.session_state.username)
     if d:
         st.sidebar.header("👤 Edit Profile")
-        bio = st.sidebar.text_area("Bio", value=d.get("bio",""))
-        role = st.sidebar.selectbox("Role", ["Student","Teacher"], index=["Student","Teacher"].index(d.get("role","Student")))
-        if st.sidebar.button("Update Profile"):
-            db.collection("users").document(st.session_state.username).update({"bio":bio,"role":role})
-            st.sidebar.success("Updated!")
-
+        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""), key="profile_bio")
+        role = st.sidebar.selectbox(
+            "Role", ["Student", "Teacher"],
+            index=["Student", "Teacher"].index(d.get("role", "Student")),
+            key="profile_role"
+        )
+        if st.sidebar.button("Update Profile", key="update_profile_btn"):
+            db.collection("users").document(st.session_state.username).update({
+                "bio": bio,
+                "role": role
+            })
+            st.sidebar.success("Profile updated!", icon="✅")
+            
 def show_notifications():
     d = get_user_data(st.session_state.username)
     if d and d.get("notifications"):
