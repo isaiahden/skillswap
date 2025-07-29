@@ -166,16 +166,7 @@ def chat_interface():
             })
             st.rerun()
 
-def video_room_interface():
-    st.markdown("<div class='chat-header'><h4>🎥 Video Rooms</h4></div>", unsafe_allow_html=True)
-    new = st.text_input("New Room Name")
-    if st.button("Create Room"):
-        rid = new.strip().lower()
-        db.collection("live_rooms").document(rid).set({"created_by":st.session_state.username,"created_at":datetime.now(),"active":True})
-        st.success(f"Created room '{rid}'")
-    for r in db.collection("live_rooms").where("active","==",True).stream():
-        i = r.to_dict()
-        st.markdown(f"**Room:** {r.id} by {i.get('created_by')}")
+
 
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
@@ -260,13 +251,12 @@ if not st.session_state.logged_in:
     with col2: signup_page()
 else:
     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
-    section = st.sidebar.radio("📂 Menu", ["💬 Chat","🎥 Video","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
+    section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
     st.sidebar.markdown("---")
     if st.sidebar.button("Logout"): st.session_state.logged_in=False; st.session_state.username=""; st.experimental_rerun()
     show_notifications(); profile_edit_sidebar()
 
     if section == "💬 Chat": chat_interface()
-    elif section == "🎥 Video": video_room_interface()
     elif section == "🧑‍💻 Profiles": view_profiles()
     elif section == "📅 Booking": booking_interface()
     elif section == "🚪 Rooms": channel_interface()
