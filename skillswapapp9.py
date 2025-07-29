@@ -195,22 +195,30 @@ def signup_page():
     email = st.text_input("Email", key="signup_email")
     p = st.text_input("Password", type="password", key="signup_password")
 
-    if st.button("Send Verification Code", key="signup_send_code"):
+    cooldown_remaining = None
+    if u:
+        ver_doc = db.collection("email_verifications").document(u).get()
+        if ver_doc.exists:
+            data = ver_doc.to_dict()
+            last_time = datetime.fromisoformat(data.get("timestamp"))
+            elapsed = (datetime.utcnow() - last_time).total_seconds()
+            if elapsed < 60:
+                cooldown_remaining = int(60 - elapsed)
+                countdown_placeholder = st.empty()
+
+    send_button_disabled = cooldown_remaining is not None
+    if send_button_disabled:
+        countdown_placeholder.warning(f"⏳ Please wait {cooldown_remaining} seconds before requesting another code.")
+
+    send_clicked = st.button("Send Verification Code", key="signup_send_code", disabled=send_button_disabled)
+
+    if send_clicked:
         if not u or not email or not p:
             st.error("All fields required.")
         elif get_user_data(u):
             st.error("Username taken.")
         else:
-            # Cooldown logic: prevent resending within 60 seconds
             now = datetime.utcnow()
-            ver_doc = db.collection("email_verifications").document(u).get()
-            if ver_doc.exists:
-                data = ver_doc.to_dict()
-                last_time = datetime.fromisoformat(data.get("timestamp", now.isoformat()))
-                if (now - last_time).total_seconds() < 60:
-                    st.warning("Please wait before requesting another verification code.")
-                    return
-
             code = generate_otp()
             if send_email_otp(email, code):
                 db.collection("email_verifications").document(u).set({
