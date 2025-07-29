@@ -273,5 +273,5 @@ elif section == "👤 Profile":
 elif section == "🔔 Notifications":
     show_notifications()
 
-    st.markdown("---")
-    st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
+st.markdown("---")
+st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
