@@ -260,7 +260,7 @@ else:
     elif section == "🧑‍💻 Profiles": view_profiles()
     elif section == "📅 Booking": booking_interface()
     elif section == "🚪 Rooms": channel_interface()
-    elif section == "👤 Profile": profile_edit_sidebar()
+    elif section == "👤 Profile": profile_edit()
     elif section == "🔔 Notifications": show_notifications()
 
     st.markdown("---")
