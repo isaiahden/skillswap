@@ -30,10 +30,16 @@ else:
     
 st.markdown("""
 <style>
-/* Force radio button label text to white for visibility */
-[data-baseweb="radio"] label {
+/* Ensure radio button text is visible even on dark or rgba backgrounds */
+div[data-baseweb="radio"] > div {
     color: white !important;
+    background-color: rgba(0,0,0,0.3); /* optional if you want subtle contrast */
+    padding: 6px 10px;
+    border-radius: 8px;
     font-weight: 600;
+}
+div[data-baseweb="radio"] label {
+    color: white !important;
     font-size: 16px;
 }
 </style>
