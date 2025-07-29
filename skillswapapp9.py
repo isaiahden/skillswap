@@ -90,7 +90,15 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 .clearfix::after{content:'';clear:both;display:table;}
 </style>
 """, unsafe_allow_html=True)
-
+def send_password_reset(email):
+    try:
+        link = auth.generate_password_reset_link(email)
+        st.success("📧 Password reset link sent!")
+        st.markdown(f"[Click here if email doesn’t arrive]({link})")
+    except Exception as e:
+        st.error("❌ Failed to send reset link.")
+        st.exception(e)
+        
 # === AUTH UI ===
 def login_page():
     st.subheader("🔐 Login")
