@@ -13,50 +13,21 @@ from email.mime.text import MIMEText
 import hashlib
 import os
 # ---------------- FIREBASE SETUP ----------------
-# --- Streamlit Setup ---
 st.set_page_config(page_title="SkillSwap", layout="wide")
 
-if "show_popup" not in st.session_state:
-    st.session_state.show_popup = False
-if "login_view" not in st.session_state:
-    st.session_state.login_view = False
+# --------- SESSION SETUP ---------
+if "page" not in st.session_state:
+    st.session_state.page = "landing"  # other values: "plans", "login"
 
+if "plan_email" not in st.session_state:
+    st.session_state.plan_email = ""
+
+# --------- PAYSTACK PUBLIC KEY ---------
 PAYSTACK_PUBLIC_KEY = st.secrets["PAYSTACK"]["PUBLIC_KEY"]
 
-# --- Hero Section / Landing Page ---
-if not st.session_state.show_popup and not st.session_state.login_view:
-    st.markdown("""
-        <div style='text-align: center; padding: 60px; background-color: #075e54; color: white; border-radius: 12px;'>
-            <h1>Welcome to SkillSwap 🌍</h1>
-            <p style="font-size:18px;">Learn and teach real-world skills from people just like you — anywhere, anytime.</p>
-            <form>
-                <button onclick="window.parent.postMessage('open_popup','*')" style='padding:12px 30px; font-size:18px; background:#25D366; color:white; border:none; border-radius:6px;'>Sign In</button>
-            </form>
-        </div>
-    """, unsafe_allow_html=True)
-
-# --- JavaScript to trigger popup from button click ---
-st.markdown("""
-<script>
-    window.addEventListener("message", (event) => {
-        if (event.data === "open_popup") {
-            const streamlitFrame = window.parent.document.querySelector('iframe');
-            if (streamlitFrame) {
-                streamlitFrame.contentWindow.streamlitSendMessage("popup:true");
-            }
-        }
-    });
-</script>
-""", unsafe_allow_html=True)
-
-# --- Streamlit event handler ---
-def handle_popup():
-    st.session_state.show_popup = True
-
-st.experimental_on_event("popup", handle_popup)
-
-# --- JS function to launch Paystack inline checkout ---
+# --------- JAVASCRIPT FOR PAYSTACK INLINE PAYMENT ---------
 st.markdown(f"""
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 function payWithPaystack(amount_kobo, email) {{
   var handler = PaystackPop.setup({{
@@ -65,11 +36,10 @@ function payWithPaystack(amount_kobo, email) {{
     amount: amount_kobo,
     currency: 'NGN',
     callback: function(response) {{
-        alert('✅ Payment successful! Ref: ' + response.reference);
-        window.parent.postMessage('show_login','*');
+        alert('✅ Payment successful. Ref: ' + response.reference);
     }},
     onClose: function() {{
-        alert('Payment cancelled');
+        alert('❌ Payment cancelled.');
     }}
   }});
   handler.openIframe();
@@ -77,58 +47,52 @@ function payWithPaystack(amount_kobo, email) {{
 </script>
 """, unsafe_allow_html=True)
 
-# --- JS to trigger login screen after payment ---
-st.markdown("""
-<script>
-    window.addEventListener("message", (event) => {
-        if (event.data === "show_login") {
-            const streamlitFrame = window.parent.document.querySelector('iframe');
-            if (streamlitFrame) {
-                streamlitFrame.contentWindow.streamlitSendMessage("login:true");
-            }
-        }
-    });
-</script>
-""", unsafe_allow_html=True)
+# --------- LANDING PAGE ---------
+if st.session_state.page == "landing":
+    st.markdown("""
+        <div style='text-align: center; padding: 60px; background-color: #075e54; color: white; border-radius: 12px;'>
+            <h1>Welcome to SkillSwap 🌍</h1>
+            <p style="font-size:18px;">Learn and teach real-world skills from people just like you — anywhere, anytime.</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-def show_login():
-    st.session_state.login_view = True
-    st.session_state.show_popup = False
+    if st.button("🚪 Sign In"):
+        st.session_state.page = "plans"
 
-st.experimental_on_event("login", show_login)
-
-# --- Pricing Popup ---
-if st.session_state.show_popup:
+# --------- PLAN SELECTION PAGE ---------
+elif st.session_state.page == "plans":
     st.markdown("### 💳 Choose Your Plan")
-    email = st.text_input("Enter your email", key="plan_email")
+    st.session_state.plan_email = st.text_input("Enter your email", value=st.session_state.plan_email)
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("#### 🆓 Free Trial")
         st.markdown("✅ 2 Weeks Access\n\n🚫 Limited features")
-        if st.button("Start Free", key="free_trial_btn"):
-            st.session_state.login_view = True
-            st.session_state.show_popup = False
+        if st.button("Start Free"):
+            st.session_state.page = "login"
 
     with col2:
         st.markdown("#### ₦10,000 / Month")
         st.markdown("✅ Full Access\n💼 Cancel Anytime")
-        if st.button("Pay ₦10,000", key="monthly_pay_btn"):
+        if st.button("Pay ₦10,000"):
             st.markdown(f"""
             <script>
-            payWithPaystack(1000000, "{email}");
+            payWithPaystack(1000000, "{st.session_state.plan_email}");
             </script>
             """, unsafe_allow_html=True)
+            st.session_state.page = "login"
 
     with col3:
         st.markdown("#### ₦120,000 / Year")
         st.markdown("✅ Save 10%\n📆 12 Months Access")
-        if st.button("Pay ₦120,000", key="yearly_pay_btn"):
+        if st.button("Pay ₦120,000"):
             st.markdown(f"""
             <script>
-            payWithPaystack(12000000, "{email}");
+            payWithPaystack(12000000, "{st.session_state.plan_email}");
             </script>
             """, unsafe_allow_html=True)
+            st.session_state.page = "login"
+            
 # ---------------- FIREBASE SETUP ----------------
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
