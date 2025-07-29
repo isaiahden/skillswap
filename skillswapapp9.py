@@ -269,7 +269,12 @@ if not st.session_state.logged_in:
 else:
     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
     
-    section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
+    section = st.sidebar.radio(
+        "📂 Menu",
+        ["💬 Chat", "🧑‍💻 Profiles", "📅 Booking", "🚪 Rooms", "👤 Profile", "🔔 Notifications"],
+        key="main_menu_radio"
+    )
+
     st.sidebar.markdown("---")
     
     if st.sidebar.button("Logout"):
