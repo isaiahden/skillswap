@@ -94,35 +94,56 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 def send_password_reset(email):
     try:
         action_code_settings = auth.ActionCodeSettings(
-            url="https://skillswap-worldwide.streamlit.app",  # 🔁 Replace with your actual app URL
+            url="https://skillswap-worldwide.streamlit.app",  # ✅ Your deployed app URL
             handle_code_in_app=False
         )
         link = auth.generate_password_reset_link(email, action_code_settings)
         st.success("📧 Password reset link generated!")
-        st.markdown(f"[Click here to reset your password]({link})")
+        st.markdown(f"🔗 [Click here to reset your password]({link})")
     except Exception as e:
         st.error("❌ Failed to send reset link.")
         st.exception(e)
+
+def send_email_verification(email):
+    try:
+        link = auth.generate_email_verification_link(email)
+        st.info("📧 Verification email sent. Please check your inbox.")
+        st.write(f"🔗 [Click here to verify your email]({link})")
+    except Exception as e:
+        st.error(f"❌ Failed to send verification email: {e}")
+
 
 def login_page():
     st.subheader("🔐 Login")
     u = st.text_input("Username", key="login_user")
     p = st.text_input("Password", type="password", key="login_pass")
-    if st.button("Login"):
-        d = get_user_data(u)
-        if d and d.get("password") == hash_password(p):
+
+ if st.button("Login"):
+    d = get_user_data(u)
+    if d and d.get("password") == hash_password(p):
+        try:
+            user_record = auth.get_user_by_email(d["email"])
+            if not user_record.email_verified:
+                st.warning("⚠️ Please verify your email before logging in.")
+                return
+            # Email is verified
             st.session_state.logged_in = True
             st.session_state.username = u
-            st.success(f"Logged in as {u}")
+            st.success(f"✅ Logged in as {u}")
             st.rerun()
+        except Exception as e:
+            st.error(f"❌ Authentication failed: {e}")
+    else:
+        st.error("❌ Invalid username or password.")
+
+# 🔐 Forgot Password Section
+with st.expander("🔑 Forgot Password?"):
+    email_reset = st.text_input("Enter your registered email", key="reset_email")
+    if st.button("Send Reset Link"):
+        if email_reset.strip():
+            send_password_reset(email_reset)
         else:
-            st.error("Invalid credentials.")
-    if st.button("Forgot Password?"):
-        d = get_user_data(u)
-        if d and d.get("email"):
-            send_password_reset(d["email"])
-        else:
-            st.error("No email found for this user.")
+            st.warning("⚠️ Please enter your email address.")
 
 def signup_page():
     st.subheader("📝 Sign Up")
@@ -131,21 +152,26 @@ def signup_page():
     p = st.text_input("New Password", type="password", key="signup_pass")
     role = st.selectbox("Role", ["Student", "Teacher"])
     bio = st.text_area("Bio")
+
     if st.button("Sign Up"):
         if not u.strip() or not p or not email.strip():
-            st.error("All fields required.")
+            st.error("All fields are required.")
         elif get_user_data(u):
             st.error("Username already taken.")
         else:
+            # Create user in Firestore
             db.collection("users").document(u).set({
                 "email": email,
                 "password": hash_password(p),
                 "role": role,
                 "bio": bio,
                 "skills": [],
-                "notifications": []
+                "notifications": [],
+                "email_verified": False
             })
-            st.success("Account created. Please log in.")
+            st.success("✅ Account created! A verification link has been sent to your email.")
+            send_email_verification(email)
+
 
 
 
