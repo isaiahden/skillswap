@@ -164,9 +164,8 @@ def view_profiles():
 def chat_interface():
     st.subheader("💬 Chat with friends")
 
-    # Select chat partner
     if "chat_partner" not in st.session_state:
-        users = [doc.id for doc in db.collection("users").stream()]
+        users = sorted([doc.id for doc in db.collection("users").stream()])
         other_users = [u for u in users if u != st.session_state.username]
         if not other_users:
             st.info("No other users to chat with.")
@@ -177,20 +176,22 @@ def chat_interface():
             st.rerun()
         return
 
-    # Chat view
     partner = st.session_state.chat_partner
-    st.markdown(f"### 💬 Chatting with **{partner}**")
+    st.markdown(f"""
+        <div style='background-color:#075E54; padding:10px 15px; border-radius:10px; color:white;'>
+            <h4>💬 Chat with {partner}</h4>
+        </div>
+    """, unsafe_allow_html=True)
     st.button("⬅️ Back", on_click=lambda: st.session_state.pop("chat_partner", None))
 
-    chat_id = "_".join(sorted([st.session_state.username, partner]))  # consistent ID
+    chat_id = "_".join(sorted([st.session_state.username, partner]))
     msg_ref = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp")
     messages = msg_ref.stream()
 
-    # Display messages in WhatsApp style
     for m in messages:
         data = m.to_dict()
         is_user = data["sender"] == st.session_state.username
-        bubble_color = "#DCF8C6" if is_user else "#ECECEC"
+        bubble_color = "#dcf8c6" if is_user else "#ffffff"
         align = "right" if is_user else "left"
         name = "You" if is_user else partner
         time_str = data["timestamp"].strftime("%H:%M")
@@ -207,7 +208,6 @@ def chat_interface():
 
     st.markdown("<div style='clear: both;'></div>", unsafe_allow_html=True)
 
-    # Input and send button
     message = st.text_input("Type your message", key="chat_msg_input")
     if st.button("Send"):
         if message.strip():
