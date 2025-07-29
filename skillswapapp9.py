@@ -254,7 +254,7 @@ else:
     section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
     st.sidebar.markdown("---")
     if st.sidebar.button("Logout"): st.session_state.logged_in=False; st.session_state.username=""; st.rerun()
-    show_notifications(); profile_edit_sidebar()
+    show_notifications(); profile_edit()
 
     if section == "💬 Chat": chat_interface()
     elif section == "🧑‍💻 Profiles": view_profiles()
