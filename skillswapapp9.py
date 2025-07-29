@@ -30,17 +30,35 @@ else:
     
 st.markdown("""
 <style>
-/* Ensure radio button text is visible even on dark or rgba backgrounds */
-div[data-baseweb="radio"] > div {
+/* Target Streamlit radio button labels more specifically */
+div[data-baseweb="radio"] > label {
     color: white !important;
-    background-color: rgba(0,0,0,0.3); /* optional if you want subtle contrast */
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-weight: 600;
+    font-size: 16px !important;
+    font-weight: 600 !important;
 }
-div[data-baseweb="radio"] label {
+
+/* Style the radio button container */
+div[data-baseweb="radio"] {
     color: white !important;
-    font-size: 16px;
+    background-color: rgba(0,0,0,0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 4px 0;
+}
+
+/* Target the text content specifically */
+div[data-baseweb="radio"] > div > div {
+    color: white !important;
+}
+
+/* Alternative: target all text within radio components */
+.stRadio > div {
+    color: white !important;
+}
+
+.stRadio label {
+    color: white !important;
+    font-weight: 600 !important;
 }
 </style>
 """, unsafe_allow_html=True)
