@@ -65,67 +65,78 @@ st.markdown("""
 <style>
 /* Overall App Background */
 .stApp {
-    background-color: rgba(15, 23, 42, 0.95); /* Deep blue-gray with transparency */
-    color: white;
-}
-
-/* Headings and labels */
-h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
+    background-color: rgba(15, 23, 42, 0.95);
     color: white !important;
 }
 
-/* Input fields - Enhanced for better visibility */
+/* Force ALL text to be white and visible */
+* {
+    color: white !important;
+}
+
+/* Input fields - Much stronger contrast */
 .stTextInput > div > div > input,
 .stTextArea > div > textarea,
-.stSelectbox > div > div > div {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
+    background-color: rgba(0, 0, 0, 0.4) !important;
     color: white !important;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
 }
 
 /* Placeholder text */
-.stTextInput > div > div > input::placeholder,
-.stTextArea > div > textarea::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
+input::placeholder,
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 400 !important;
 }
 
-/* Password inputs specifically */
-input[type="password"] {
+/* Radio button text */
+.stRadio label,
+.stRadio > div,
+.stRadio * {
     color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    font-weight: 600 !important;
 }
 
-/* Radio buttons - for your login options */
-.stRadio > div > label {
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
     color: white !important;
+    font-weight: bold !important;
 }
 
-.stRadio > div > label > div {
+/* Labels */
+label {
     color: white !important;
+    font-weight: 600 !important;
 }
 
 /* Buttons */
 .stButton > button {
-    background-color: rgba(34, 197, 94, 0.9); /* Green */
-    color: white;
+    background-color: rgba(34, 197, 94, 0.9);
+    color: white !important;
     font-weight: bold;
     border-radius: 6px;
+    border: none;
 }
 
 .stButton > button:hover {
     background-color: rgba(21, 128, 61, 1.0);
 }
 
-/* Warnings, Errors, Success messages */
-.stAlert {
-    border-radius: 8px;
-    font-weight: bold;
+/* Text areas and markdown */
+.stMarkdown {
+    color: white !important;
 }
 
-/* Ensure all text is visible */
-* {
-    color: inherit;
+/* Selectbox */
+.stSelectbox * {
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
