@@ -258,17 +258,7 @@ if not st.session_state.logged_in:
     with col2: signup_page()
 else:
     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
-    
-    section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
-    st.sidebar.markdown("---")
-    
-if not st.session_state.logged_in:
-    col1, col2 = st.columns(2)
-    with col1: login_page()
-    with col2: signup_page()
-else:
-    st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
-    
+
     section = st.sidebar.radio(
         "📂 Menu",
         ["💬 Chat", "🧑‍💻 Profiles", "📅 Booking", "🚪 Rooms", "👤 Profile", "🔔 Notifications"],
@@ -276,13 +266,13 @@ else:
     )
 
     st.sidebar.markdown("---")
-    
+
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.rerun()
-    
-        # Render only the selected section
+
+    # Render only the selected section
     if section == "💬 Chat":
         chat_interface()
     elif section == "🧑‍💻 Profiles":
@@ -295,6 +285,6 @@ else:
         profile_edit()
     elif section == "🔔 Notifications":
         show_notifications()
-    
+
     st.markdown("---")
     st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
