@@ -128,23 +128,21 @@ def profile_edit():
     d = get_user_data(st.session_state.username)
     if d:
         st.sidebar.header("👤 Edit Profile")
-        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""), key="profile_bio")
-        role = st.sidebar.selectbox("Role", ["Student", "Teacher"], 
-                                    index=["Student", "Teacher"].index(d.get("role", "Student")),
-                                    key="profile_role")
-        if st.sidebar.button("Update Profile", key="profile_update_btn"):
-            db.collection("users").document(st.session_state.username).update({"bio": bio, "role": role})
-            st.sidebar.success("Updated!", icon="✅")
+        bio = st.sidebar.text_area("Bio", value=d.get("bio",""))
+        role = st.sidebar.selectbox("Role", ["Student","Teacher"], index=["Student","Teacher"].index(d.get("role","Student")))
+        if st.sidebar.button("Update Profile"):
+            db.collection("users").document(st.session_state.username).update({"bio":bio,"role":role})
+            st.sidebar.success("Updated!")
 
 def show_notifications():
     d = get_user_data(st.session_state.username)
     if d and d.get("notifications"):
         st.sidebar.header("🔔 Notifications")
-        for i, n in enumerate(d["notifications"]):
-            st.sidebar.info(n, icon="💬")
-        if st.sidebar.button("Clear All", key="clear_notifications"):
-            db.collection("users").document(st.session_state.username).update({"notifications": []})
-            st.sidebar.success("Cleared!", icon="🗑️")
+        for n in d["notifications"]:
+            st.sidebar.info(n)
+        if st.sidebar.button("Clear All"):
+            db.collection("users").document(st.session_state.username).update({"notifications":[]})
+            st.sidebar.success("Cleared!")
 
 def chat_interface():
     st.markdown("<div class='chat-header'><h4>💬 Chat</h4></div>", unsafe_allow_html=True)
@@ -254,24 +252,16 @@ if not st.session_state.logged_in:
 else:
     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
     section = st.sidebar.radio("📂 Menu", ["💬 Chat","🧑‍💻 Profiles","📅 Booking","🚪 Rooms","👤 Profile","🔔 Notifications"])
-        st.sidebar.markdown("---")
-if st.sidebar.button("Logout", key="logout_button"):
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.rerun()
+    st.sidebar.markdown("---")
+    if st.sidebar.button("Logout"): st.session_state.logged_in=False; st.session_state.username=""; st.rerun()
+    show_notifications(); profile_edit()
 
-if section == "💬 Chat":
-    chat_interface()
-elif section == "🧑‍💻 Profiles":
-    view_profiles()
-elif section == "📅 Booking":
-    booking_interface()
-elif section == "🚪 Rooms":
-    channel_interface()
-elif section == "👤 Profile":
-    profile_edit()
-elif section == "🔔 Notifications":
-    show_notifications()
+    if section == "💬 Chat": chat_interface()
+    elif section == "🧑‍💻 Profiles": view_profiles()
+    elif section == "📅 Booking": booking_interface()
+    elif section == "🚪 Rooms": channel_interface()
+    elif section == "👤 Profile": profile_edit()
+    elif section == "🔔 Notifications": show_notifications()
 
-st.markdown("---")
-st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
+    st.markdown("---")
+    st.caption(f"✅ Logged in as: **{st.session_state.username}**  |  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  |  Peer‑to‑peer learning with WhatsApp‑style UI")
