@@ -2,11 +2,14 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 from firebase_admin import auth
-from datetime import datetime
 import json
 import google.generativeai as genai
 from gtts import gTTS
 import base64
+import smtplib
+import random
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 import hashlib
 import os
 # ---------------- FIREBASE SETUP ----------------
@@ -25,18 +28,6 @@ if not api_key:
 else:
     genai.configure(api_key=api_key)
 
-
-
-# ---------------- UTILS ----------------
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def get_user_data(username):
-    if not username or not username.strip():
-        return None
-    user_ref = db.collection("users").document(username).get()
-    return user_ref.to_dict() if user_ref.exists else None
-
 # ---------------- SESSION ----------------
 st.set_page_config(page_title="SkillSwap Cloud", layout="wide")
 if "logged_in" not in st.session_state:
@@ -52,12 +43,7 @@ AI_TEACHERS = [
     {"name":"Arturo AI","skill":"Graphic Design","bio":"Creative designer with 10+ years experience.","avatar":"https://api.dicebear.com/7.x/bottts/svg?seed=Arturo"}
 ]
 
-# === UTILS ===
-def hash_password(pw): return hashlib.sha256(pw.encode()).hexdigest()
-def get_user_data(u): 
-    if not u or not u.strip(): return None
-    doc = db.collection("users").document(u).get()
-    return doc.to_dict() if doc.exists else None
+
 
 # === SESSION SETUP & THEME ===
 st.set_page_config(page_title="SkillSwap Cloud", layout="wide")
@@ -91,90 +77,178 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 </style>
 """, unsafe_allow_html=True)
 
-def send_password_reset(email):
+# --- Utility Functions ---
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def get_user_data(username):
+    if not username.strip(): return None
+    doc = db.collection("users").document(username).get()
+    return doc.to_dict() if doc.exists else None
+
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+def send_email_otp(receiver_email, otp_code):
+    sender_email = st.secrets["EMAIL_SENDER"]
+    sender_password = st.secrets["EMAIL_PASSWORD"]
+
+    msg = MIMEText(f"Your SkillSwap verification code is: {otp_code}")
+    msg['Subject'] = "SkillSwap OTP Verification"
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+
     try:
-        action_code_settings = auth.ActionCodeSettings(
-            url="https://skillswap-worldwide.streamlit.app",  # ✅ Your deployed app URL
-            handle_code_in_app=False
-        )
-        link = auth.generate_password_reset_link(email, action_code_settings)
-        st.success("📧 Password reset link generated!")
-        st.markdown(f"🔗 [Click here to reset your password]({link})")
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        return True
     except Exception as e:
-        st.error("❌ Failed to send reset link.")
+        st.error(f"Failed to send OTP: {e}")
+        return False
+
+def send_password_reset_otp(email):
+    code = generate_otp()
+    timestamp = datetime.utcnow()
+    try:
+        db.collection("reset_otps").document(email).set({
+            "code": code,
+            "timestamp": timestamp.isoformat()
+        })
+        return send_email_otp(email, code)
+    except Exception as e:
+        st.error("Failed to generate OTP.")
         st.exception(e)
+        return False
 
-def send_email_verification(email):
-    try:
-        link = auth.generate_email_verification_link(email)
-        st.info("📧 Verification email sent. Please check your inbox.")
-        st.write(f"🔗 [Click here to verify your email]({link})")
-    except Exception as e:
-        st.error(f"❌ Failed to send verification email: {e}")
-
+def verify_reset_otp(email, entered_code):
+    doc = db.collection("reset_otps").document(email).get()
+    if doc.exists:
+        data = doc.to_dict()
+        timestamp = datetime.fromisoformat(data["timestamp"])
+        if (datetime.utcnow() - timestamp).total_seconds() > 600:
+            st.error("Code expired.")
+            return False
+        if entered_code == data["code"]:
+            db.collection("reset_otps").document(email).delete()
+            return True
+        st.error("Incorrect code.")
+    else:
+        st.error("No OTP request found.")
+    return False
 
 def login_page():
     st.subheader("🔐 Login")
-    u = st.text_input("Username", key="login_user")
-    p = st.text_input("Password", type="password", key="login_pass")
-
- if st.button("Login"):
-    d = get_user_data(u)
-    if d and d.get("password") == hash_password(p):
-        try:
-            user_record = auth.get_user_by_email(d["email"])
-            if not user_record.email_verified:
-                st.warning("⚠️ Please verify your email before logging in.")
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
+    if st.button("Login"):
+        d = get_user_data(u)
+        if d and d.get("password") == hash_password(p):
+            if not d.get("verified"):
+                st.warning("Please verify your email.")
                 return
-            # Email is verified
             st.session_state.logged_in = True
             st.session_state.username = u
-            st.success(f"✅ Logged in as {u}")
+            st.success(f"Welcome back, {u}!")
             st.rerun()
-        except Exception as e:
-            st.error(f"❌ Authentication failed: {e}")
-    else:
-        st.error("❌ Invalid username or password.")
-
-# 🔐 Forgot Password Section
-with st.expander("🔑 Forgot Password?"):
-    email_reset = st.text_input("Enter your registered email", key="reset_email")
-    if st.button("Send Reset Link"):
-        if email_reset.strip():
-            send_password_reset(email_reset)
         else:
-            st.warning("⚠️ Please enter your email address.")
+            st.error("Invalid credentials.")
+
+def password_reset():
+    st.subheader("🔑 Forgot Password")
+    step = st.session_state.get("reset_step", "request")
+
+    if step == "request":
+        email = st.text_input("Enter your email")
+        if st.button("Send Reset OTP"):
+            if send_password_reset_otp(email):
+                st.session_state.reset_email = email
+                st.session_state.reset_step = "verify"
+                st.rerun()
+
+    elif step == "verify":
+        code = st.text_input("Enter OTP code")
+        if st.button("Verify Code"):
+            if verify_reset_otp(st.session_state.reset_email, code.strip()):
+                st.session_state.reset_step = "set_password"
+                st.rerun()
+
+    elif step == "set_password":
+        new_pass = st.text_input("Enter new password", type="password")
+        if st.button("Reset Password"):
+            users = db.collection("users").stream()
+            for user in users:
+                d = user.to_dict()
+                if d.get("email") == st.session_state.reset_email:
+                    db.collection("users").document(user.id).update({
+                        "password": hash_password(new_pass)
+                    })
+                    st.success("Password updated!")
+                    del st.session_state.reset_email
+                    st.session_state.reset_step = "request"
+                    break
 
 def signup_page():
     st.subheader("📝 Sign Up")
-    u = st.text_input("New Username", key="signup_user")
-    email = st.text_input("Email Address", key="signup_email")
-    p = st.text_input("New Password", type="password", key="signup_pass")
-    role = st.selectbox("Role", ["Student", "Teacher"])
-    bio = st.text_area("Bio")
-
-    if st.button("Sign Up"):
-        if not u.strip() or not p or not email.strip():
-            st.error("All fields are required.")
+    u = st.text_input("Username")
+    email = st.text_input("Email")
+    p = st.text_input("Password", type="password")
+    if st.button("Send Verification Code"):
+        if not u or not email or not p:
+            st.error("All fields required.")
         elif get_user_data(u):
-            st.error("Username already taken.")
+            st.error("Username taken.")
         else:
-            # Create user in Firestore
-            db.collection("users").document(u).set({
-                "email": email,
-                "password": hash_password(p),
-                "role": role,
-                "bio": bio,
-                "skills": [],
-                "notifications": [],
-                "email_verified": False
-            })
-            st.success("✅ Account created! A verification link has been sent to your email.")
-            send_email_verification(email)
+            code = generate_otp()
+            if send_email_otp(email, code):
+                db.collection("email_verifications").document(u).set({
+                    "email": email,
+                    "code": code,
+                    "password": hash_password(p),
+                    "verified": False,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                st.session_state.signup_user = u
+                st.success("Code sent. Enter below.")
 
+if "signup_user" in st.session_state:
+        st.info(f"Verify account for {st.session_state.signup_user}")
+        input_code = st.text_input("Verification Code")
+        if st.button("Verify"):
+            doc = db.collection("email_verifications").document(st.session_state.signup_user).get()
+            if doc.exists:
+                data = doc.to_dict()
+                if input_code == data.get("code"):
+                    db.collection("users").document(st.session_state.signup_user).set({
+                        "email": data["email"],
+                        "password": data["password"],
+                        "verified": True
+                    })
+                    db.collection("email_verifications").document(st.session_state.signup_user).delete()
+                    st.success("Account created!")
+                    del st.session_state.signup_user
+                else:
+                    st.error("Incorrect code.")
 
+st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-
+if not st.session_state.logged_in:
+    opt = st.radio("Choose option", ["Login", "Sign Up", "Forgot Password"])
+    if opt == "Login":
+        login_page()
+    elif opt == "Sign Up":
+        signup_page()
+    elif opt == "Forgot Password":
+        password_reset()
+else:
+    st.success(f"You are logged in as {st.session_state.username}")
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+                
 # === INTERFACE FUNCTIONS ===
 def profile_edit():
     d = get_user_data(st.session_state.username)
