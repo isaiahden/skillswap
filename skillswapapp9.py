@@ -405,9 +405,55 @@ def booking_interface():
 
 # ---------------- ROOMS ----------------
 def channel_interface():
-    st.title("📢 SkillSwap Channels")
+    st.markdown("""
+        <style>
+        body {
+            background-color: #F6F9FC;
+            font-family: 'Inter', sans-serif;
+        }
+        .title-block {
+            background-color: #1E1E2F;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+        .message-bubble {
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 10px;
+            max-width: 70%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .from-user {
+            background-color: #0052CC;
+            color: white;
+            float: right;
+            clear: both;
+        }
+        .from-others {
+            background-color: #E3E8F0;
+            color: black;
+            float: left;
+            clear: both;
+        }
+        .emoji-reactions {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .typing-indicator {
+            font-style: italic;
+            color: #777;
+        }
+        .read-receipt {
+            font-size: 11px;
+            float: right;
+            color: #999;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    # Load all channels
+    st.markdown("<div class='title-block'><h2>📢 SkillSwap Channels</h2></div>", unsafe_allow_html=True)
+
     channels = db.collection("channels").stream()
     channel_data = []
     for c in channels:
@@ -415,7 +461,6 @@ def channel_interface():
         info["id"] = c.id
         channel_data.append(info)
 
-    # Layout split: Sidebar list + Chat pane
     col1, col2 = st.columns([1, 2])
     with col1:
         st.markdown("### 🔍 Available Channels")
@@ -426,7 +471,6 @@ def channel_interface():
             selected = next((c for c in channel_data if f"{c['name']} - by {c['created_by']}" == selected_channel), None)
 
     with col2:
-        # Create new channel
         with st.expander("➕ Create New Channel"):
             channel_name = st.text_input("Channel Name")
             channel_desc = st.text_area("Description")
@@ -449,13 +493,11 @@ def channel_interface():
                         st.success("Channel created!")
                         st.rerun()
 
-        # If a channel is selected
         if selected:
             st.markdown(f"### 🗨️ {selected['name']}")
             st.caption(f"🧑‍🏫 Created by: {selected['created_by']}")
             st.markdown(selected.get("description", "No description."))
 
-            # Follow
             if st.session_state.username not in selected.get("followers", []):
                 if st.button("Follow this channel"):
                     db.collection("channels").document(selected["id"]).update({
@@ -464,7 +506,6 @@ def channel_interface():
                     st.success("You're now following this channel.")
                     st.rerun()
 
-            # Broadcast form (only creator)
             if st.session_state.username == selected["created_by"]:
                 with st.form(key="broadcast_form"):
                     message = st.text_input("Broadcast Message (supports emoji like :smile:)")
@@ -476,20 +517,19 @@ def channel_interface():
                             "text": message.strip(),
                             "sender": st.session_state.username,
                             "timestamp": datetime.now(),
-                            "reactions": []
+                            "reactions": [],
+                            "read_by": [st.session_state.username]
                         })
                         st.success("Message sent.")
-                        st.experimental_rerun()
+                        st.rerun()
 
-            # Typing indicator
             typing_ref = db.collection("channels").document(selected["id"]).collection("typing").document("status")
             typing_ref.set({"typing": st.session_state.username}, merge=True)
 
             typing_data = typing_ref.get().to_dict()
             if typing_data and typing_data.get("typing") != st.session_state.username:
-                st.markdown(f"💬 *{typing_data['typing']} is typing...*")
+                st.markdown(f"<div class='typing-indicator'>💬 {typing_data['typing']} is typing...</div>", unsafe_allow_html=True)
 
-            # Show messages (WhatsApp-style bubbles + reactions)
             st.markdown("### 💬 Messages")
             msgs = db.collection("channels").document(selected["id"]).collection("messages") \
                 .order_by("timestamp").stream()
@@ -500,23 +540,22 @@ def channel_interface():
                 text = d.get("text", "")
                 timestamp = d.get("timestamp")
                 reactions = d.get("reactions", [])
+                read_by = d.get("read_by", [])
                 is_me = sender == st.session_state.username
-                align = "right" if is_me else "left"
-                color = "#dcf8c6" if is_me else "#fff"
+                bubble_class = "from-user" if is_me else "from-others"
                 time = timestamp.strftime("%b %d %H:%M") if timestamp else "Unknown time"
+                read_receipt = "✅✅" if len(read_by) > 1 else "✅"
 
                 st.markdown(f"""
-                <div style='background-color:{color}; padding:10px; margin:6px 0; 
-                            border-radius:10px; max-width:70%; float:{align}; clear:both;
-                            box-shadow:0 2px 5px rgba(0,0,0,0.1);'>
+                <div class='message-bubble {bubble_class}'>
                     <b>{'You' if is_me else sender}</b><br>
                     {text}<br>
-                    <small style='color:gray;'>{time}</small><br>
-                    <span style='font-size: 16px;'>👍 ❤️ 😂 😢</span>
+                    <small style='color:gray;'>{time}</small>
+                    <div class='read-receipt'>{read_receipt}</div>
+                    <div class='emoji-reactions'>👍 ❤️ 😂 😢</div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Reaction buttons (with Firestore update)
                 cols = st.columns(4)
                 for i, emoji_icon in enumerate(["👍", "❤️", "😂", "😢"]):
                     if cols[i].button(emoji_icon, key=f"react_{m.id}_{emoji_icon}"):
@@ -525,9 +564,13 @@ def channel_interface():
                         })
                         st.rerun()
 
+                if not is_me and st.session_state.username not in read_by:
+                    db.collection("channels").document(selected["id"]).collection("messages").document(m.id).update({
+                        "read_by": firestore.ArrayUnion([st.session_state.username])
+                    })
+
             st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
 
-            # Typing input (will also trigger typing status)
             user_input = st.text_input("Type your message here", key="channel_chat_input")
             if st.button("Send Message") and user_input.strip():
                 import emoji
@@ -536,10 +579,12 @@ def channel_interface():
                     "text": user_input.strip(),
                     "sender": st.session_state.username,
                     "timestamp": datetime.now(),
-                    "reactions": []
+                    "reactions": [],
+                    "read_by": [st.session_state.username]
                 })
-                typing_ref.set({"typing": ""})  # Clear typing
+                typing_ref.set({"typing": ""})
                 st.rerun()
+
 
 
 
