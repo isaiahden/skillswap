@@ -160,23 +160,23 @@ def password_reset():
     step = st.session_state.get("reset_step", "request")
 
     if step == "request":
-        email = st.text_input("Enter your email")
-        if st.button("Send Reset OTP"):
+        email = st.text_input("Enter your email", key="reset_email_input")
+        if st.button("Send Reset OTP", key="reset_send_otp"):
             if send_password_reset_otp(email):
                 st.session_state.reset_email = email
                 st.session_state.reset_step = "verify"
                 st.rerun()
 
     elif step == "verify":
-        code = st.text_input("Enter OTP code")
-        if st.button("Verify Code"):
+        code = st.text_input("Enter OTP code", key="reset_verify_code")
+        if st.button("Verify Code", key="reset_verify_btn"):
             if verify_reset_otp(st.session_state.reset_email, code.strip()):
                 st.session_state.reset_step = "set_password"
                 st.rerun()
 
     elif step == "set_password":
-        new_pass = st.text_input("Enter new password", type="password")
-        if st.button("Reset Password"):
+        new_pass = st.text_input("Enter new password", type="password", key="reset_new_pass")
+        if st.button("Reset Password", key="reset_pass_btn"):
             users = db.collection("users").stream()
             for user in users:
                 d = user.to_dict()
@@ -191,15 +191,26 @@ def password_reset():
 
 def signup_page():
     st.subheader("📝 Sign Up")
-    u = st.text_input("Username", key="signup_username_input")
+    u = st.text_input("Username", key="signup_username")
     email = st.text_input("Email", key="signup_email")
     p = st.text_input("Password", type="password", key="signup_password")
+
     if st.button("Send Verification Code", key="signup_send_code"):
         if not u or not email or not p:
             st.error("All fields required.")
         elif get_user_data(u):
             st.error("Username taken.")
         else:
+            # Cooldown logic: prevent resending within 60 seconds
+            now = datetime.utcnow()
+            ver_doc = db.collection("email_verifications").document(u).get()
+            if ver_doc.exists:
+                data = ver_doc.to_dict()
+                last_time = datetime.fromisoformat(data.get("timestamp", now.isoformat()))
+                if (now - last_time).total_seconds() < 60:
+                    st.warning("Please wait before requesting another verification code.")
+                    return
+
             code = generate_otp()
             if send_email_otp(email, code):
                 db.collection("email_verifications").document(u).set({
@@ -207,7 +218,7 @@ def signup_page():
                     "code": code,
                     "password": hash_password(p),
                     "verified": False,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": now.isoformat()
                 })
                 st.session_state.signup_user = u
                 st.success("Code sent. Enter below.")
@@ -230,7 +241,6 @@ def signup_page():
                     del st.session_state.signup_user
                 else:
                     st.error("Incorrect code.")
-
 
 st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
                 
