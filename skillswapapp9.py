@@ -65,7 +65,7 @@ st.markdown("""
 <style>
 /* Overall App Background */
 .stApp {
-    background-color: rgba(15, 23, 42, 0.95);  /* Deep blue-gray with transparency */
+    background-color: rgba(15, 23, 42, 0.95); /* Deep blue-gray with transparency */
     color: white;
 }
 
@@ -74,14 +74,35 @@ h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
     color: white !important;
 }
 
-/* Input fields */
+/* Input fields - Enhanced for better visibility */
 .stTextInput > div > div > input,
 .stTextArea > div > textarea,
 .stSelectbox > div > div > div {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Placeholder text */
+.stTextInput > div > div > input::placeholder,
+.stTextArea > div > textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Password inputs specifically */
+input[type="password"] {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Radio buttons - for your login options */
+.stRadio > div > label {
+    color: white !important;
+}
+
+.stRadio > div > label > div {
+    color: white !important;
 }
 
 /* Buttons */
@@ -101,9 +122,13 @@ h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
     border-radius: 8px;
     font-weight: bold;
 }
+
+/* Ensure all text is visible */
+* {
+    color: inherit;
+}
 </style>
 """, unsafe_allow_html=True)
-
 
 
 # ---------------- SESSION ----------------
