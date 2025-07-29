@@ -139,9 +139,9 @@ def verify_reset_otp(email, entered_code):
 
 def login_page():
     st.subheader("🔐 Login")
-    u = st.text_input("Username")
-    p = st.text_input("Password", type="password")
-    if st.button("Login"):
+    u = st.text_input("Username", key="login_username")
+    p = st.text_input("Password", type="password", key="login_password")
+    if st.button("Login", key="login_button"):
         d = get_user_data(u)
         if d and d.get("password") == hash_password(p):
             if not d.get("verified"):
@@ -153,6 +153,7 @@ def login_page():
             st.rerun()
         else:
             st.error("Invalid credentials.")
+
 
 def password_reset():
     st.subheader("🔑 Forgot Password")
