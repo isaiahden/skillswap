@@ -233,23 +233,6 @@ def signup_page():
 
 
 st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    opt = st.radio("Choose option", ["Login", "Sign Up", "Forgot Password"])
-    if opt == "Login":
-        login_page()
-    elif opt == "Sign Up":
-        signup_page()
-    elif opt == "Forgot Password":
-        password_reset()
-else:
-    st.success(f"You are logged in as {st.session_state.username}")
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-        st.rerun()
                 
 # === INTERFACE FUNCTIONS ===
 def profile_edit():
