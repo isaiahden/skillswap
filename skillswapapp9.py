@@ -30,35 +30,33 @@ else:
     
 st.markdown("""
 <style>
-/* Target Streamlit radio button labels more specifically */
-div[data-baseweb="radio"] > label {
-    color: white !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-}
-
-/* Style the radio button container */
-div[data-baseweb="radio"] {
-    color: white !important;
-    background-color: rgba(0,0,0,0.3);
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin: 4px 0;
-}
-
-/* Target the text content specifically */
-div[data-baseweb="radio"] > div > div {
+/* Make radio button text white */
+.stRadio > div > label > div {
     color: white !important;
 }
 
-/* Alternative: target all text within radio components */
-.stRadio > div {
+.stRadio > div > label {
     color: white !important;
 }
 
-.stRadio label {
+/* Target the actual text content */
+div[data-baseweb="radio"] label span {
     color: white !important;
-    font-weight: 600 !important;
+}
+
+/* More comprehensive targeting */
+.stRadio * {
+    color: white !important;
+}
+
+/* Specific targeting for radio button text */
+div[role="radiogroup"] label {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+div[role="radiogroup"] label > div {
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
