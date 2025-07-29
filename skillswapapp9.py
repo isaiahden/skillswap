@@ -461,7 +461,7 @@ def channel_interface():
                         "followers": firestore.ArrayUnion([st.session_state.username])
                     })
                     st.success("You're now following this channel.")
-                    st.experimental_rerun()
+                    st.rerun()
 
             # Broadcast form (only creator)
             if st.session_state.username == selected["created_by"]:
