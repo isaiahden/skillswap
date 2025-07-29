@@ -124,7 +124,7 @@ def signup_page():
             st.success("Account created. Please log in.")
 
 # === INTERFACE FUNCTIONS ===
-def profile_edit_sidebar():
+def profile_edit():
     d = get_user_data(st.session_state.username)
     if d:
         st.sidebar.header("👤 Edit Profile")
