@@ -30,38 +30,47 @@ else:
 
 st.markdown("""
 <style>
+/* Overall App Background */
 .stApp {
-    background-color: rgba(15, 32, 39, 0.95);  /* Dark bluish with 95% opacity */
-    background-image: linear-gradient(
-        135deg,
-        rgba(32, 58, 67, 0.9),
-        rgba(44, 83, 100, 0.9)
-    );
-    background-attachment: fixed;
-    background-size: cover;
+    background-color: rgba(15, 23, 42, 0.95);  /* Deep blue-gray with transparency */
     color: white;
 }
 
+/* Headings and labels */
+h1, h2, h3, h4, h5, h6, .stMarkdown, .stTextInput label, .stTextArea label {
+    color: white !important;
+}
+
+/* Input fields */
 .stTextInput > div > div > input,
-.stTextArea > div > textarea {
+.stTextArea > div > textarea,
+.stSelectbox > div > div > div {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Buttons */
 .stButton > button {
-    background-color: rgba(76, 175, 80, 0.85);
+    background-color: rgba(34, 197, 94, 0.9); /* Green */
     color: white;
     font-weight: bold;
     border-radius: 6px;
 }
 
 .stButton > button:hover {
-    background-color: rgba(56, 142, 60, 0.95);
+    background-color: rgba(21, 128, 61, 1.0);
+}
+
+/* Warnings, Errors, Success messages */
+.stAlert {
+    border-radius: 8px;
+    font-weight: bold;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ---------------- SESSION ----------------
