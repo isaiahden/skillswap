@@ -735,16 +735,12 @@ def chat_interface():
     # Controls
     st.markdown("---")
     
-    col1, col2, col3 = st.columns([2, 2, 2])
+    col1, col2 = st.columns([2, 2])
     
     with col1:
-        if st.button("🔄 Refresh"):
-            st.rerun()
-    
-    with col2:
         live = st.checkbox("🔴 Live Chat", value=True)
     
-    with col3:
+    with col2:
         if st.button("🚪 Exit Chat", key="exit_chat_btn"):
             # Clear partner selection and disable live chat
             st.session_state.partner_select = ""
