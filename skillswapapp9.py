@@ -613,25 +613,26 @@ def chat_interface():
     st.markdown('<div style="padding:10px;">', unsafe_allow_html=True)
     col1, col2 = st.columns([6, 1])
     with col1:
+        # Use a fixed key and separate session variable
         msg = st.text_input(
             "",
+            value=st.session_state.get("typed_msg", ""),
             placeholder="Type a message...",
-            key=st.session_state["msg_key"],
+            key="chat_input_field",
             label_visibility="collapsed"
         )
+        st.session_state["typed_msg"] = msg  # Always keep latest input
     with col2:
         if st.button("➤", key="send_btn"):
-            if msg.strip():
+            if st.session_state["typed_msg"].strip():
                 db.collection("chats").document(chat_id).collection("messages").add({
                     "sender": st.session_state.username,
                     "receiver": partner,
-                    "text": msg.strip(),
+                    "text": st.session_state["typed_msg"].strip(),
                     "timestamp": datetime.now()
                 })
-                # Change msg_key to force-clear input
-                old_key = st.session_state["msg_key"]
-                index = int(old_key.split("_")[-1])
-                st.session_state["msg_key"] = f"msg_input_{index + 1}"
+                st.session_state["typed_msg"] = ""  # Clear the input manually
+                st.experimental_rerun()  # Works on most systems; if not, reload by another means
             else:
                 st.warning("⚠️ Please enter a message before sending.")
     st.markdown('</div>', unsafe_allow_html=True)
