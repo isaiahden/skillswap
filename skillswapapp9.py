@@ -519,7 +519,7 @@ def chat_interface():
 
     /* Messages container */
     .messages-container {
-        height: 400px; 
+        height: 100px; 
         overflow-y: auto;
         padding: 15px;
         background: #0f172b;
