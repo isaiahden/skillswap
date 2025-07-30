@@ -509,7 +509,7 @@ def chat_interface():
         height: 45px; 
         border-radius: 50%;
         background: #6c757d; 
-        color: white;
+        color: black;
         display: flex; 
         align-items: center; 
         justify-content: center;
@@ -592,7 +592,7 @@ def chat_interface():
         width: auto;
         height: auto;
         text-align: center;        /* ✅ Center the text */
-        vertical-align: middle;    /* ✅ Align vertically (optional) */
+        horizontal -align: middle;    /* ✅ Align vertically (optional) */
     }
 
 
