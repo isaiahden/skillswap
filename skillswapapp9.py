@@ -470,13 +470,14 @@ def chat_interface():
 
     st.markdown("""<style>
     * { color: white !important; }
-    .stSelectbox label { color: black !important; font-weight: 600 !important; }
+    .stSelectbox label { color: white !important; font-weight: 600 !important; }
     .stSelectbox div[role='button'],
     .stSelectbox div[data-baseweb="select"],
     div[role='listbox'] > div {
-        color: black !important;
-        background-color: black !important;
+        color: white !important;
+        background-color: transparent !important;
         border-radius: 25px !important;
+        border: 1px solid white !important;
     }
     .stTextInput input {
         background-color: white !important;
@@ -569,6 +570,7 @@ def chat_interface():
     </style>""", unsafe_allow_html=True)
 
     st.markdown("### 👥 Select Chat Partner")
+
 
 
 
