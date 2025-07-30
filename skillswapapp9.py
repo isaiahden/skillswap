@@ -481,7 +481,7 @@ def chat_interface():
 
     /* Send button styling */
     .stButton button {
-        background-color: #25d366;
+        background-color: #007bff;
         color: white;
         border: none;
         border-radius: 8px;
@@ -491,15 +491,16 @@ def chat_interface():
     }
 
     .stButton button:hover {
-        background-color: #1ea851;
+        background-color: #0056b3;
     }
 
     /* Chat header */
     .chat-header {
-        background: linear-gradient(90deg, #075e54, #128c7e);
+        background: #f8f9fa;
         padding: 15px 20px;
         border-radius: 10px 10px 0 0;
-        color: white;
+        border: 1px solid #ddd;
+        color: #333;
         margin-bottom: 0;
     }
 
@@ -507,7 +508,7 @@ def chat_interface():
         width: 45px; 
         height: 45px; 
         border-radius: 50%;
-        background: #25d366; 
+        background: #6c757d; 
         color: white;
         display: flex; 
         align-items: center; 
@@ -521,16 +522,16 @@ def chat_interface():
         height: 400px; 
         overflow-y: auto;
         padding: 15px;
-        background: #e5ddd5;
-        border: 1px solid #ccc;
+        background: #ffffff;
+        border: 1px solid #ddd;
         border-top: none;
         border-radius: 0 0 10px 10px;
     }
 
     /* Message bubbles */
     .message-sent {
-        background: #dcf8c6;
-        color: #333;
+        background: #007bff;
+        color: white;
         padding: 8px 12px;
         border-radius: 18px;
         margin: 5px 0 5px auto;
@@ -543,7 +544,7 @@ def chat_interface():
     }
 
     .message-received {
-        background: white;
+        background: #f1f3f4;
         color: #333;
         padding: 8px 12px;
         border-radius: 18px;
@@ -658,8 +659,8 @@ def chat_interface():
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="partner-avatar">{partner_initial}</div>
                     <div>
-                        <h4 style="margin:0;color:white;">{st.session_state["current_partner"]}</h4>
-                        <div style="color:#4fc3f7;font-size:12px;">● online</div>
+                        <h4 style="margin:0;color:#333;">{st.session_state["current_partner"]}</h4>
+                        <div style="color:#28a745;font-size:12px;">● online</div>
                     </div>
                 </div>
             </div>
@@ -765,7 +766,7 @@ def chat_interface():
         else:
             # Sleep without refresh to maintain responsiveness
             time.sleep(0.1)
-
+                    
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
     search = st.text_input("Search skill or role")
