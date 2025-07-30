@@ -612,8 +612,20 @@ def chat_interface():
     # Initialize chat state
     if "current_partner" not in st.session_state:
         st.session_state["current_partner"] = ""
+    if "reset_selectbox" not in st.session_state:
+        st.session_state["reset_selectbox"] = False
     
-    partner = st.selectbox("Choose a contact:", [""] + users, key="partner_select")
+    # Reset selectbox if needed
+    if st.session_state["reset_selectbox"]:
+        st.session_state["reset_selectbox"] = False
+        st.rerun()
+    
+    partner = st.selectbox(
+        "Choose a contact:", 
+        [""] + users, 
+        key="partner_select",
+        index=0 if st.session_state["current_partner"] == "" else ([""] + users).index(st.session_state["current_partner"]) if st.session_state["current_partner"] in users else 0
+    )
     
     # Update current partner when selection changes
     if partner != st.session_state.get("current_partner", ""):
@@ -632,9 +644,9 @@ def chat_interface():
     
     with header_col1:
         if st.button("← Back", key="back_btn", help="Go back to contact selection"):
-            # Clear the current partner and reset selectbox
+            # Clear the current partner and trigger selectbox reset
             st.session_state["current_partner"] = ""
-            st.session_state["partner_select"] = ""
+            st.session_state["reset_selectbox"] = True
             if 'live_chat' in st.session_state:
                 st.session_state.live_chat = False
             st.rerun()
