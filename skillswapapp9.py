@@ -454,24 +454,53 @@ def show_notifications():
             st.sidebar.success("Cleared!")
 
 def chat_interface():
+    # --- Fix for invisible selectbox text ---
+    st.markdown("""
+        <style>
+        .stSelectbox label {
+            color: white !important;
+        }
+        .stSelectbox div[role='button'] {
+            color: black !important;
+            background-color: white !important;
+        }
+        .stSelectbox div[data-baseweb="select"] {
+            background-color: white !important;
+        }
+        div[role='listbox'] > div {
+            color: black !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("<div class='chat-header'><h4>💬 Chat</h4></div>", unsafe_allow_html=True)
-    users = [doc.id for doc in db.collection("users").stream() if doc.id!=st.session_state.username]
+    users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
     partner = st.selectbox("Partner:", users)
+
     chat_id = "_".join(sorted([st.session_state.username, partner]))
     msgs = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
+
     for m in msgs:
         d = m.to_dict()
-        sent = d["sender"]==st.session_state.username
+        sent = d["sender"] == st.session_state.username
         cls = "message-sent" if sent else "message-received"
         name = "You" if sent else d["sender"]
-        st.markdown(f"<div class='message-bubble {cls} clearfix'><b>{name}</b><br>{d['text']}<br><small>{d['timestamp'].strftime('%H:%M')}</small></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class='message-bubble {cls} clearfix'>
+                <b>{name}</b><br>{d['text']}<br>
+                <small>{d['timestamp'].strftime('%H:%M')}</small>
+            </div>
+        """, unsafe_allow_html=True)
+
     st.markdown("<div class='clearfix'></div>", unsafe_allow_html=True)
     txt = st.text_input("Type a message", key="msg_input")
     if st.button("Send"):
         if txt.strip():
             db.collection("chats").document(chat_id).collection("messages").add({
-                "sender":st.session_state.username,"receiver":partner,
-                "text":txt.strip(),"timestamp":datetime.now()
+                "sender": st.session_state.username,
+                "receiver": partner,
+                "text": txt.strip(),
+                "timestamp": datetime.now()
             })
             st.rerun()
 
@@ -488,59 +517,7 @@ def view_profiles():
             continue
         st.markdown(f"### 👤 {uname}\n**Role**: {d.get('role','N/A')}\n**Bio**: {d.get('bio','')}\n**Skills**: {', '.join(d.get('skills',[])) or 'None'}\n---")
 
-def booking_interface():
-    st.markdown("<div class='chat-header'><h4>🤖 Book AI Teacher</h4></div>", unsafe_allow_html=True)
-    ai_names = [f"{ai['name']} ({ai['skill']})" for ai in AI_TEACHERS]
-    choice = st.selectbox("Choose an AI Teacher", ai_names)
-    ai = AI_TEACHERS[ai_names.index(choice)]
-    st.image(ai["avatar"], width=80)
-    st.markdown(f"<b>{ai['name']}</b> – <i>{ai['skill']}</i><br>{ai['bio']}", unsafe_allow_html=True)
-    date = st.date_input("Select Date")
-    time = st.time_input("Select Time")
-    if st.button("Book Session"):
-        db.collection("bookings").add({
-            "student":st.session_state.username,"teacher":ai["name"],
-            "skill":ai["skill"],"datetime":datetime.combine(date,time),
-            "status":"confirmed","ai":True
-        })
-        st.success(f"✅ Booked with {ai['name']} on {date} at {time}")
-        st.session_state.active_ai_teacher=ai["name"]
-        st.session_state.active_ai_skill=ai["skill"]
-        st.session_state.active_ai_avatar=ai["avatar"]
-        st.session_state.ai_chat_history=[]
-    st.markdown("### 💬 Your AI Chat")
-    if "active_ai_teacher" in st.session_state:
-        name=st.session_state.active_ai_teacher
-        chat_id = f"{st.session_state.username}_{name}"
-        msgs = db.collection("ai_chats").document(chat_id).collection("messages").order_by("timestamp").stream()
-        st.session_state.ai_chat_history = []
-        for m in msgs:
-            d=m.to_dict(); st.session_state.ai_chat_history.append({"sender":d["sender"],"text":d["text"]})
-        for msg in st.session_state.ai_chat_history:
-            sent = msg["sender"]=="user"
-            align = "right" if sent else "left"
-            clr = "#dcf8c6" if sent else "#fff"
-            sender = "You" if sent else name
-            st.markdown(f"<div style='background-color:{clr};padding:10px;border-radius:12px; margin:6px 0; float:{align};max-width:75%;clear:both;box-shadow:0 1px 3px rgba(0,0,0,0.1);'><b>{sender}:</b><br>{msg['text']}</div>", unsafe_allow_html=True)
-        st.markdown("<div style='clear:both'></div>", unsafe_allow_html=True)
-        inp = st.text_input("Message", key="ai_input")
-        if st.button("Send"):
-            if inp.strip():
-                db.collection("ai_chats").document(chat_id).collection("messages").add({
-                    "sender":"user","text":inp.strip(),"timestamp":datetime.now()
-                })
-                try:
-                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel("gemini-1.5-pro-latest")
-                    history = [{"role":"user","parts":[m["text"]]} if m["sender"]=="user" else {"role":"model","parts":[m["text"]]} for m in st.session_state.ai_chat_history]
-                    chat = model.start_chat(history=history)
-                    resp = chat.send_message(inp)
-                    db.collection("ai_chats").document(chat_id).collection("messages").add({
-                        "sender":"ai","text":resp.text,"timestamp":datetime.now()
-                    })
-                    st.rerun()
-                except Exception as e:
-                    st.error("AI Error: "+str(e))
+
 
 def channel_interface():
     st.markdown("<div class='chat-header'><h4>📢 SkillSwap Channels</h4></div>", unsafe_allow_html=True)
@@ -568,7 +545,7 @@ else:
 
     section = st.sidebar.radio(
         "📂 Menu",
-        ["💬 Chat", "🧑‍💻 Profiles", "📅 Booking", "🚪 Rooms", "👤 Profile", "🔔 Notifications"],
+        ["💬 Chat", "🧑‍💻 Profiles", "🚪 Rooms", "👤 Profile", "🔔 Notifications"],
         key="main_menu_radio"
     )
 
@@ -584,8 +561,6 @@ else:
         chat_interface()
     elif section == "🧑‍💻 Profiles":
         view_profiles()
-    elif section == "📅 Booking":
-        booking_interface()
     elif section == "🚪 Rooms":
         channel_interface()
     elif section == "👤 Profile":
