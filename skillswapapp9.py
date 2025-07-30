@@ -629,10 +629,13 @@ def chat_interface():
                     "text": msg.strip(),
                     "timestamp": datetime.now()
                 })
-                st.session_state["msg_input"] = ""
-                st.rerun()
+                # Force clear by changing the key (resets the widget)
+                old_key = st.session_state.msg_key
+                new_index = int(old_key.split("_")[-1]) + 1
+                st.session_state.msg_key = f"msg_input_{new_index}"
             else:
                 st.warning("⚠️ Please enter a message before sending.")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Chat controls
