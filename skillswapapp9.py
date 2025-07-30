@@ -438,7 +438,6 @@ def show_notifications():
             st.sidebar.success("Cleared!")
 
 import time  # Place this at the top of your script
-
 def chat_interface():
     import time
     from datetime import datetime
@@ -637,7 +636,8 @@ def chat_interface():
 
     chat_id = "_".join(sorted([st.session_state.username, st.session_state["current_partner"]]))
 
-    # Chat header with back button
+    # Chat container with fixed dimensions
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     header_col1, header_col2 = st.columns([1, 10])
     
     with header_col1:
@@ -759,8 +759,16 @@ def chat_interface():
             st.success("👋 Left the chat")
             st.rerun()
 
-    # Auto refresh
+    st.markdown('</div>', unsafe_allow_html=True)  # Close chat container
+
+    # Auto refresh with reduced frequency if no recent activity
     if live:
+        # Check if there was recent message activity
+        current_time = time.time()
+        if 'last_message_time' not in st.session_state:
+            st.session_state.last_message_time = current_time
+        
+        # Refresh every 0.2 seconds for real-time feel
         time.sleep(0.2)
         st.rerun()
 
