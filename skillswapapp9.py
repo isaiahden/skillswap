@@ -620,30 +620,40 @@ def chat_interface():
         st.error(f"❌ Error loading users: {str(e)}")
         return
 
+    # Initialize chat state
+    if "current_partner" not in st.session_state:
+        st.session_state["current_partner"] = ""
+    
     partner = st.selectbox("Choose a contact:", [""] + users, key="partner_select")
-    if not partner:
+    
+    # Update current partner when selection changes
+    if partner != st.session_state.get("current_partner", ""):
+        st.session_state["current_partner"] = partner
+    
+    # Use current_partner for chat logic
+    if not st.session_state["current_partner"]:
         st.info("💬 Select a contact to start chatting")
         return
 
-    chat_id = "_".join(sorted([st.session_state.username, partner]))
+    chat_id = "_".join(sorted([st.session_state.username, st.session_state["current_partner"]]))
 
     # Chat header with back button
     header_col1, header_col2 = st.columns([1, 10])
     
     with header_col1:
         if st.button("← Back", key="back_btn", help="Go back to contact selection"):
-            # Clear the partner selection
-            st.session_state.partner_select = ""
+            # Clear the current partner (not the selectbox directly)
+            st.session_state["current_partner"] = ""
             st.rerun()
     
     with header_col2:
-        partner_initial = partner[0].upper()
+        partner_initial = st.session_state["current_partner"][0].upper()
         st.markdown(f'''
             <div class="chat-header">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="partner-avatar">{partner_initial}</div>
                     <div>
-                        <h4 style="margin:0;color:white;">{partner}</h4>
+                        <h4 style="margin:0;color:white;">{st.session_state["current_partner"]}</h4>
                         <div style="color:#4fc3f7;font-size:12px;">● online</div>
                     </div>
                 </div>
@@ -742,8 +752,8 @@ def chat_interface():
     
     with col2:
         if st.button("🚪 Exit Chat", key="exit_chat_btn"):
-            # Clear partner selection and disable live chat
-            st.session_state.partner_select = ""
+            # Clear current partner and disable live chat
+            st.session_state["current_partner"] = ""
             if 'live_chat' in st.session_state:
                 st.session_state.live_chat = False
             st.success("👋 Left the chat")
@@ -753,7 +763,6 @@ def chat_interface():
     if live:
         time.sleep(0.2)
         st.rerun()
-
 
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
