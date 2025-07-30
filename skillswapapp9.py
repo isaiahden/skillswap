@@ -245,12 +245,15 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 </style>
 """, unsafe_allow_html=True)
 
+
+
 # --- Utility Functions ---
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def get_user_data(username):
-    if not username.strip(): return None
+    if not username.strip():
+        return None
     doc = db.collection("users").document(username).get()
     return doc.to_dict() if doc.exists else None
 
@@ -260,12 +263,10 @@ def generate_otp():
 def send_email_otp(receiver_email, otp_code):
     sender_email = st.secrets["EMAIL_SENDER"]
     sender_password = st.secrets["EMAIL_PASSWORD"]
-
     msg = MIMEText(f"Your SkillSwap verification code is: {otp_code}")
     msg['Subject'] = "SkillSwap OTP Verification"
     msg['From'] = sender_email
     msg['To'] = receiver_email
-
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
@@ -274,6 +275,20 @@ def send_email_otp(receiver_email, otp_code):
     except Exception as e:
         st.error(f"Failed to send OTP: {e}")
         return False
+
+def send_password_reset_otp(email):
+    users = db.collection("users").stream()
+    for user in users:
+        d = user.to_dict()
+        if d.get("email") == email:
+            code = generate_otp()
+            db.collection("reset_otps").document(email).set({
+                "code": code,
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            return send_email_otp(email, code)
+    st.error("Email not found.")
+    return False
 
 def verify_reset_otp(email, entered_code):
     doc = db.collection("reset_otps").document(email).get()
@@ -291,6 +306,7 @@ def verify_reset_otp(email, entered_code):
         st.error("No OTP request found.")
     return False
 
+# --- Login Page ---
 def login_page():
     st.subheader("🔐 Login")
     u = st.text_input("Username", key="login_username")
@@ -308,7 +324,7 @@ def login_page():
         else:
             st.error("Invalid credentials.")
 
-
+# --- Password Reset Page ---
 def password_reset():
     st.subheader("🔑 Forgot Password")
     step = st.session_state.get("reset_step", "request")
@@ -343,6 +359,7 @@ def password_reset():
                     st.session_state.reset_step = "request"
                     break
 
+# --- Signup Page ---
 def signup_page():
     st.subheader("📝 Sign Up")
     u = st.text_input("Username", key="signup_username")
@@ -357,7 +374,7 @@ def signup_page():
             last_time = datetime.fromisoformat(data.get("timestamp"))
             elapsed = (datetime.utcnow() - last_time).total_seconds()
             if elapsed < 60:
-                cooldown_remaining = int(60 - elapsed)
+                cooldown_remaining = int(90 - elapsed)
                 countdown_placeholder = st.empty()
 
     send_button_disabled = cooldown_remaining is not None
@@ -396,7 +413,8 @@ def signup_page():
                     db.collection("users").document(st.session_state.signup_user).set({
                         "email": data["email"],
                         "password": data["password"],
-                        "verified": True
+                        "verified": True,
+                        "signup_time": datetime.utcnow()  # ✅ Add signup timestamp here
                     })
                     db.collection("email_verifications").document(st.session_state.signup_user).delete()
                     st.success("Account created!")
@@ -404,6 +422,7 @@ def signup_page():
                 else:
                     st.error("Incorrect code.")
 
+# --- App Page Config ---
 st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
                 
 # === INTERFACE FUNCTIONS ===
