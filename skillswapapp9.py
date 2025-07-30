@@ -460,6 +460,33 @@ import time  # Place this at the top of your script
 
 def chat_interface():
     # WhatsApp-style chat interface with enhanced visibility
+    st.markdown("""
+    <style>
+    /* Remove Streamlit’s default top spacing and background artifacts */
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+    }
+
+    section.main > div {
+        padding-top: 0 !important;
+        background-color: transparent !important;
+    }
+
+    .element-container:nth-child(1) {
+        margin-top: 0px !important;
+    }
+
+    header {
+        visibility: hidden;
+    }
+
+    body {
+        background-color: #0a1929 !important;  /* Same as your chat background */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("""<style>
     * { color: white !important; }
     .stSelectbox label { color: white !important; font-weight: 600 !important; }
