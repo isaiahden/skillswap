@@ -20,183 +20,173 @@ if not firebase_admin._apps:
 
 # Always set db after Firebase is initialized (even if it was already initialized)
 db = firestore.client()
-
-# # Live chat functionality (already in your code)
-# with col2:
-#     live_mode = st.checkbox("🔴 Live Chat", value=True, help="Real-time updates")
-
-# # Auto-refresh for live chat (always on by default)
-# if live_mode:
-#     import time
-#     time.sleep(2)  # 2 second refresh rate
-#     st.rerun()
     
-st.markdown("""
-<style>
-/* Make radio button text white */
-.stRadio > div > label > div {
-    color: white !important;
-}
+# st.markdown("""
+# <style>
+# /* Make radio button text white */
+# .stRadio > div > label > div {
+#     color: white !important;
+# }
 
-.stRadio > div > label {
-    color: white !important;
-}
+# .stRadio > div > label {
+#     color: white !important;
+# }
 
-/* Target the actual text content */
-div[data-baseweb="radio"] label span {
-    color: white !important;
-}
+# /* Target the actual text content */
+# div[data-baseweb="radio"] label span {
+#     color: white !important;
+# }
 
-/* More comprehensive targeting */
-.stRadio * {
-    color: white !important;
-}
+# /* More comprehensive targeting */
+# .stRadio * {
+#     color: white !important;
+# }
 
-/* Specific targeting for radio button text */
-div[role="radiogroup"] label {
-    color: white !important;
-    font-weight: 500 !important;
-}
+# /* Specific targeting for radio button text */
+# div[role="radiogroup"] label {
+#     color: white !important;
+#     font-weight: 500 !important;
+# }
 
-div[role="radiogroup"] label > div {
-    color: white !important;
-}
-</style>
-""", unsafe_allow_html=True)
+# div[role="radiogroup"] label > div {
+#     color: white !important;
+# }
+# </style>
+# """, unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-/* Overall App Background */
-.stApp {
-    background-color: rgba(15, 23, 42, 0.95);
-    color: white !important;
-}
+# st.markdown("""
+# <style>
+# /* Overall App Background */
+# .stApp {
+#     background-color: rgba(15, 23, 42, 0.95);
+#     color: white !important;
+# }
 
-/* Desktop-specific improvements */
-@media (min-width: 768px) {
-    /* Force ALL text to be white with better rendering on desktop */
-    * {
-        color: white !important;
-        -webkit-font-smoothing: antialiased !important;
-        -moz-osx-font-smoothing: grayscale !important;
-        text-rendering: optimizeLegibility !important;
-    }
+# /* Desktop-specific improvements */
+# @media (min-width: 768px) {
+#     /* Force ALL text to be white with better rendering on desktop */
+#     * {
+#         color: white !important;
+#         -webkit-font-smoothing: antialiased !important;
+#         -moz-osx-font-smoothing: grayscale !important;
+#         text-rendering: optimizeLegibility !important;
+#     }
     
-    /* Input fields - Desktop optimized */
-    .stTextInput > div > div > input,
-    .stTextArea > div > textarea,
-    input[type="text"],
-    input[type="password"],
-    input[type="email"],
-    textarea {
-        background-color: rgba(0, 0, 0, 0.6) !important;
-        color: white !important;
-        border: 2px solid rgba(255, 255, 255, 0.4) !important;
-        border-radius: 6px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
-        letter-spacing: 0.5px !important;
-    }
+#     /* Input fields - Desktop optimized */
+#     .stTextInput > div > div > input,
+#     .stTextArea > div > textarea,
+#     input[type="text"],
+#     input[type="password"],
+#     input[type="email"],
+#     textarea {
+#         background-color: rgba(0, 0, 0, 0.6) !important;
+#         color: white !important;
+#         border: 2px solid rgba(255, 255, 255, 0.4) !important;
+#         border-radius: 6px !important;
+#         font-weight: 600 !important;
+#         font-size: 16px !important;
+#         text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
+#         letter-spacing: 0.5px !important;
+#     }
     
-    /* Radio button text - Desktop specific */
-    .stRadio label,
-    .stRadio > div,
-    .stRadio * {
-        color: white !important;
-        font-weight: 700 !important;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-        font-size: 16px !important;
-    }
-}
+#     /* Radio button text - Desktop specific */
+#     .stRadio label,
+#     .stRadio > div,
+#     .stRadio * {
+#         color: white !important;
+#         font-weight: 700 !important;
+#         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+#         font-size: 16px !important;
+#     }
+# }
 
-/* Mobile styles (keep current behavior) */
-@media (max-width: 767px) {
-    * {
-        color: white !important;
-    }
+# /* Mobile styles (keep current behavior) */
+# @media (max-width: 767px) {
+#     * {
+#         color: white !important;
+#     }
     
-    .stTextInput > div > div > input,
-    .stTextArea > div > textarea,
-    input, textarea {
-        background-color: rgba(0, 0, 0, 0.4) !important;
-        color: white !important;
-        border: 2px solid rgba(255, 255, 255, 0.3) !important;
-        font-weight: 500 !important;
-    }
-}
+#     .stTextInput > div > div > input,
+#     .stTextArea > div > textarea,
+#     input, textarea {
+#         background-color: rgba(0, 0, 0, 0.4) !important;
+#         color: white !important;
+#         border: 2px solid rgba(255, 255, 255, 0.3) !important;
+#         font-weight: 500 !important;
+#     }
+# }
 
-/* Universal improvements */
-input::placeholder,
-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.8) !important;
-    font-weight: 500 !important;
-}
+# /* Universal improvements */
+# input::placeholder,
+# textarea::placeholder {
+#     color: rgba(255, 255, 255, 0.8) !important;
+#     font-weight: 500 !important;
+# }
 
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-    color: white !important;
-    font-weight: bold !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
+# /* Headings */
+# h1, h2, h3, h4, h5, h6 {
+#     color: white !important;
+#     font-weight: bold !important;
+#     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+# }
 
-/* Labels */
-label {
-    color: white !important;
-    font-weight: 600 !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.2) !important;
-}
+# /* Labels */
+# label {
+#     color: white !important;
+#     font-weight: 600 !important;
+#     text-shadow: 0 0 1px rgba(255, 255, 255, 0.2) !important;
+# }
 
-/* Buttons */
-.stButton > button {
-    background-color: rgba(34, 197, 94, 0.9);
-    color: white !important;
-    font-weight: bold;
-    border-radius: 6px;
-    border: none;
-    text-shadow: none !important;
-}
+# /* Buttons */
+# .stButton > button {
+#     background-color: rgba(34, 197, 94, 0.9);
+#     color: white !important;
+#     font-weight: bold;
+#     border-radius: 6px;
+#     border: none;
+#     text-shadow: none !important;
+# }
 
-.stButton > button:hover {
-    background-color: rgba(21, 128, 61, 1.0);
-}
-</style>
-""", unsafe_allow_html=True)
+# .stButton > button:hover {
+#     background-color: rgba(21, 128, 61, 1.0);
+# }
+# </style>
+# """, unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-/* Sidebar background - Dark blue with rgba */
-.css-1d391kg, 
-.st-emotion-cache-16idsys,
-section[data-testid="stSidebar"] {
-    background-color: rgba(30, 58, 138, 1) !important; /* Dark blue */
-}
+# st.markdown("""
+# <style>
+# /* Sidebar background - Dark blue with rgba */
+# .css-1d391kg, 
+# .st-emotion-cache-16idsys,
+# section[data-testid="stSidebar"] {
+#     background-color: rgba(30, 58, 138, 1) !important; /* Dark blue */
+# }
 
-section[data-testid="stSidebar"] > div {
-    background-color: rgba(30, 58, 138, 0.95) !important; /* Dark blue with slight transparency */
-}
+# section[data-testid="stSidebar"] > div {
+#     background-color: rgba(30, 58, 138, 0.95) !important; /* Dark blue with slight transparency */
+# }
 
-/* Alternative rgba dark blue options - choose one */
-/* background-color: rgba(30, 64, 175, 0.95) !important; */ /* Slightly lighter blue */
-/* background-color: rgba(29, 78, 216, 0.95) !important; */ /* Medium blue */
-/* background-color: rgba(15, 23, 42, 0.95) !important; */ /* Very dark blue-gray - matches main */
-/* background-color: rgba(30, 41, 59, 0.95) !important; */ /* Dark slate blue */
-/* background-color: rgba(12, 74, 110, 0.95) !important; */ /* Dark cyan-blue */
+# /* Alternative rgba dark blue options - choose one */
+# /* background-color: rgba(30, 64, 175, 0.95) !important; */ /* Slightly lighter blue */
+# /* background-color: rgba(29, 78, 216, 0.95) !important; */ /* Medium blue */
+# /* background-color: rgba(15, 23, 42, 0.95) !important; */ /* Very dark blue-gray - matches main */
+# /* background-color: rgba(30, 41, 59, 0.95) !important; */ /* Dark slate blue */
+# /* background-color: rgba(12, 74, 110, 0.95) !important; */ /* Dark cyan-blue */
 
-/* Sidebar content text to remain white */
-section[data-testid="stSidebar"] * {
-    color: white !important;
-}
+# /* Sidebar content text to remain white */
+# section[data-testid="stSidebar"] * {
+#     color: white !important;
+# }
 
-/* Your existing styles... */
-.stApp {
-    background-color: rgba(15, 23, 42, 0.95);
-    color: white !important;
-}
+# /* Your existing styles... */
+# .stApp {
+#     background-color: rgba(15, 23, 42, 0.95);
+#     color: white !important;
+# }
 
-/* Rest of your existing CSS... */
-</style>
-""", unsafe_allow_html=True)
+# /* Rest of your existing CSS... */
+# </style>
+# """, unsafe_allow_html=True)
 
 
 # ---------------- SESSION ----------------
@@ -205,15 +195,6 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
-
-# === AI TEACHERS LIST ===
-AI_TEACHERS = [
-    {"name":"Ada AI","skill":"Python Programming","bio":"Expert in Python and data science.","avatar":"https://api.dicebear.com/7.x/bottts/svg?seed=Ada"},
-    {"name":"Leo AI","skill":"Digital Marketing","bio":"Marketing strategist and growth hacker.","avatar":"https://api.dicebear.com/7.x/bottts/svg?seed=Leo"},
-    {"name":"Marie AI","skill":"French Language","bio":"Native French speaker and language coach.","avatar":"https://api.dicebear.com/7.x/bottts/svg?seed=Marie"},
-    {"name":"Arturo AI","skill":"Graphic Design","bio":"Creative designer with 10+ years experience.","avatar":"https://api.dicebear.com/7.x/bottts/svg?seed=Arturo"}
-]
-
 
 
 # === SESSION SETUP & THEME ===
@@ -250,180 +231,180 @@ body {font-family:'Segoe UI',sans-serif;background-color:#e5ddd5;}
 
 
 
-# --- Utility Functions ---
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+# # --- Utility Functions ---
+# def hash_password(password):
+#     return hashlib.sha256(password.encode()).hexdigest()
 
-def get_user_data(username):
-    if not username.strip():
-        return None
-    doc = db.collection("users").document(username).get()
-    return doc.to_dict() if doc.exists else None
+# def get_user_data(username):
+#     if not username.strip():
+#         return None
+#     doc = db.collection("users").document(username).get()
+#     return doc.to_dict() if doc.exists else None
 
-def generate_otp():
-    return str(random.randint(100000, 999999))
+# def generate_otp():
+#     return str(random.randint(100000, 999999))
 
-def send_email_otp(receiver_email, otp_code):
-    sender_email = st.secrets["EMAIL_SENDER"]
-    sender_password = st.secrets["EMAIL_PASSWORD"]
-    msg = MIMEText(f"Your SkillSwap verification code is: {otp_code}")
-    msg['Subject'] = "SkillSwap OTP Verification"
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-        return True
-    except Exception as e:
-        st.error(f"Failed to send OTP: {e}")
-        return False
+# def send_email_otp(receiver_email, otp_code):
+#     sender_email = st.secrets["EMAIL_SENDER"]
+#     sender_password = st.secrets["EMAIL_PASSWORD"]
+#     msg = MIMEText(f"Your SkillSwap verification code is: {otp_code}")
+#     msg['Subject'] = "SkillSwap OTP Verification"
+#     msg['From'] = sender_email
+#     msg['To'] = receiver_email
+#     try:
+#         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+#             server.login(sender_email, sender_password)
+#             server.send_message(msg)
+#         return True
+#     except Exception as e:
+#         st.error(f"Failed to send OTP: {e}")
+#         return False
 
-def send_password_reset_otp(email):
-    users = db.collection("users").stream()
-    for user in users:
-        d = user.to_dict()
-        if d.get("email") == email:
-            code = generate_otp()
-            db.collection("reset_otps").document(email).set({
-                "code": code,
-                "timestamp": datetime.utcnow().isoformat()
-            })
-            return send_email_otp(email, code)
-    st.error("Email not found.")
-    return False
+# def send_password_reset_otp(email):
+#     users = db.collection("users").stream()
+#     for user in users:
+#         d = user.to_dict()
+#         if d.get("email") == email:
+#             code = generate_otp()
+#             db.collection("reset_otps").document(email).set({
+#                 "code": code,
+#                 "timestamp": datetime.utcnow().isoformat()
+#             })
+#             return send_email_otp(email, code)
+#     st.error("Email not found.")
+#     return False
 
-def verify_reset_otp(email, entered_code):
-    doc = db.collection("reset_otps").document(email).get()
-    if doc.exists:
-        data = doc.to_dict()
-        timestamp = datetime.fromisoformat(data["timestamp"])
-        if (datetime.utcnow() - timestamp).total_seconds() > 600:
-            st.error("Code expired.")
-            return False
-        if entered_code == data["code"]:
-            db.collection("reset_otps").document(email).delete()
-            return True
-        st.error("Incorrect code.")
-    else:
-        st.error("No OTP request found.")
-    return False
+# def verify_reset_otp(email, entered_code):
+#     doc = db.collection("reset_otps").document(email).get()
+#     if doc.exists:
+#         data = doc.to_dict()
+#         timestamp = datetime.fromisoformat(data["timestamp"])
+#         if (datetime.utcnow() - timestamp).total_seconds() > 600:
+#             st.error("Code expired.")
+#             return False
+#         if entered_code == data["code"]:
+#             db.collection("reset_otps").document(email).delete()
+#             return True
+#         st.error("Incorrect code.")
+#     else:
+#         st.error("No OTP request found.")
+#     return False
 
-# --- Login Page ---
-def login_page():
-    st.subheader("🔐 Login")
-    u = st.text_input("Username", key="login_username")
-    p = st.text_input("Password", type="password", key="login_password")
-    if st.button("Login", key="login_button"):
-        d = get_user_data(u)
-        if d and d.get("password") == hash_password(p):
-            if not d.get("verified"):
-                st.warning("Please verify your email.")
-                return
-            st.session_state.logged_in = True
-            st.session_state.username = u
-            st.success(f"Welcome back, {u}!")
-            st.rerun()
-        else:
-            st.error("Invalid credentials.")
+# # --- Login Page ---
+# def login_page():
+#     st.subheader("🔐 Login")
+#     u = st.text_input("Username", key="login_username")
+#     p = st.text_input("Password", type="password", key="login_password")
+#     if st.button("Login", key="login_button"):
+#         d = get_user_data(u)
+#         if d and d.get("password") == hash_password(p):
+#             if not d.get("verified"):
+#                 st.warning("Please verify your email.")
+#                 return
+#             st.session_state.logged_in = True
+#             st.session_state.username = u
+#             st.success(f"Welcome back, {u}!")
+#             st.rerun()
+#         else:
+#             st.error("Invalid credentials.")
 
-# --- Password Reset Page ---
-def password_reset():
-    st.subheader("🔑 Forgot Password")
-    step = st.session_state.get("reset_step", "request")
+# # --- Password Reset Page ---
+# def password_reset():
+#     st.subheader("🔑 Forgot Password")
+#     step = st.session_state.get("reset_step", "request")
 
-    if step == "request":
-        email = st.text_input("Enter your email", key="reset_email_input")
-        if st.button("Send Reset OTP", key="reset_send_otp"):
-            if send_password_reset_otp(email):
-                st.session_state.reset_email = email
-                st.session_state.reset_step = "verify"
-                st.rerun()
+#     if step == "request":
+#         email = st.text_input("Enter your email", key="reset_email_input")
+#         if st.button("Send Reset OTP", key="reset_send_otp"):
+#             if send_password_reset_otp(email):
+#                 st.session_state.reset_email = email
+#                 st.session_state.reset_step = "verify"
+#                 st.rerun()
 
-    elif step == "verify":
-        code = st.text_input("Enter OTP code", key="reset_verify_code")
-        if st.button("Verify Code", key="reset_verify_btn"):
-            if verify_reset_otp(st.session_state.reset_email, code.strip()):
-                st.session_state.reset_step = "set_password"
-                st.rerun()
+#     elif step == "verify":
+#         code = st.text_input("Enter OTP code", key="reset_verify_code")
+#         if st.button("Verify Code", key="reset_verify_btn"):
+#             if verify_reset_otp(st.session_state.reset_email, code.strip()):
+#                 st.session_state.reset_step = "set_password"
+#                 st.rerun()
 
-    elif step == "set_password":
-        new_pass = st.text_input("Enter new password", type="password", key="reset_new_pass")
-        if st.button("Reset Password", key="reset_pass_btn"):
-            users = db.collection("users").stream()
-            for user in users:
-                d = user.to_dict()
-                if d.get("email") == st.session_state.reset_email:
-                    db.collection("users").document(user.id).update({
-                        "password": hash_password(new_pass)
-                    })
-                    st.success("Password updated!")
-                    del st.session_state.reset_email
-                    st.session_state.reset_step = "request"
-                    break
+#     elif step == "set_password":
+#         new_pass = st.text_input("Enter new password", type="password", key="reset_new_pass")
+#         if st.button("Reset Password", key="reset_pass_btn"):
+#             users = db.collection("users").stream()
+#             for user in users:
+#                 d = user.to_dict()
+#                 if d.get("email") == st.session_state.reset_email:
+#                     db.collection("users").document(user.id).update({
+#                         "password": hash_password(new_pass)
+#                     })
+#                     st.success("Password updated!")
+#                     del st.session_state.reset_email
+#                     st.session_state.reset_step = "request"
+#                     break
 
-# --- Signup Page ---
-def signup_page():
-    st.subheader("📝 Sign Up")
-    u = st.text_input("Username", key="signup_username")
-    email = st.text_input("Email", key="signup_email")
-    p = st.text_input("Password", type="password", key="signup_password")
+# # --- Signup Page ---
+# def signup_page():
+#     st.subheader("📝 Sign Up")
+#     u = st.text_input("Username", key="signup_username")
+#     email = st.text_input("Email", key="signup_email")
+#     p = st.text_input("Password", type="password", key="signup_password")
 
-    cooldown_remaining = None
-    if u:
-        ver_doc = db.collection("email_verifications").document(u).get()
-        if ver_doc.exists:
-            data = ver_doc.to_dict()
-            last_time = datetime.fromisoformat(data.get("timestamp"))
-            elapsed = (datetime.utcnow() - last_time).total_seconds()
-            if elapsed < 60:
-                cooldown_remaining = int(90 - elapsed)
-                countdown_placeholder = st.empty()
+#     cooldown_remaining = None
+#     if u:
+#         ver_doc = db.collection("email_verifications").document(u).get()
+#         if ver_doc.exists:
+#             data = ver_doc.to_dict()
+#             last_time = datetime.fromisoformat(data.get("timestamp"))
+#             elapsed = (datetime.utcnow() - last_time).total_seconds()
+#             if elapsed < 60:
+#                 cooldown_remaining = int(90 - elapsed)
+#                 countdown_placeholder = st.empty()
 
-    send_button_disabled = cooldown_remaining is not None
-    if send_button_disabled:
-        countdown_placeholder.warning(f"⏳ Please wait {cooldown_remaining} seconds before requesting another code.")
+#     send_button_disabled = cooldown_remaining is not None
+#     if send_button_disabled:
+#         countdown_placeholder.warning(f"⏳ Please wait {cooldown_remaining} seconds before requesting another code.")
 
-    send_clicked = st.button("Send Verification Code", key="signup_send_code", disabled=send_button_disabled)
+#     send_clicked = st.button("Send Verification Code", key="signup_send_code", disabled=send_button_disabled)
 
-    if send_clicked:
-        if not u or not email or not p:
-            st.error("All fields required.")
-        elif get_user_data(u):
-            st.error("Username taken.")
-        else:
-            now = datetime.utcnow()
-            code = generate_otp()
-            if send_email_otp(email, code):
-                db.collection("email_verifications").document(u).set({
-                    "email": email,
-                    "code": code,
-                    "password": hash_password(p),
-                    "verified": False,
-                    "timestamp": now.isoformat()
-                })
-                st.session_state.signup_user = u
-                st.success("Code sent. Enter below.")
+#     if send_clicked:
+#         if not u or not email or not p:
+#             st.error("All fields required.")
+#         elif get_user_data(u):
+#             st.error("Username taken.")
+#         else:
+#             now = datetime.utcnow()
+#             code = generate_otp()
+#             if send_email_otp(email, code):
+#                 db.collection("email_verifications").document(u).set({
+#                     "email": email,
+#                     "code": code,
+#                     "password": hash_password(p),
+#                     "verified": False,
+#                     "timestamp": now.isoformat()
+#                 })
+#                 st.session_state.signup_user = u
+#                 st.success("Code sent. Enter below.")
 
-    if "signup_user" in st.session_state:
-        st.info(f"Verify account for {st.session_state.signup_user}")
-        input_code = st.text_input("Verification Code", key="signup_verification_code")
-        if st.button("Verify", key="signup_verify_button"):
-            doc = db.collection("email_verifications").document(st.session_state.signup_user).get()
-            if doc.exists:
-                data = doc.to_dict()
-                if input_code == data.get("code"):
-                    db.collection("users").document(st.session_state.signup_user).set({
-                        "email": data["email"],
-                        "password": data["password"],
-                        "verified": True,
-                        "signup_time": datetime.utcnow()  # ✅ Add signup timestamp here
-                    })
-                    db.collection("email_verifications").document(st.session_state.signup_user).delete()
-                    st.success("Account created!")
-                    del st.session_state.signup_user
-                else:
-                    st.error("Incorrect code.")
+#     if "signup_user" in st.session_state:
+#         st.info(f"Verify account for {st.session_state.signup_user}")
+#         input_code = st.text_input("Verification Code", key="signup_verification_code")
+#         if st.button("Verify", key="signup_verify_button"):
+#             doc = db.collection("email_verifications").document(st.session_state.signup_user).get()
+#             if doc.exists:
+#                 data = doc.to_dict()
+#                 if input_code == data.get("code"):
+#                     db.collection("users").document(st.session_state.signup_user).set({
+#                         "email": data["email"],
+#                         "password": data["password"],
+#                         "verified": True,
+#                         "signup_time": datetime.utcnow()  # ✅ Add signup timestamp here
+#                     })
+#                     db.collection("email_verifications").document(st.session_state.signup_user).delete()
+#                     st.success("Account created!")
+#                     del st.session_state.signup_user
+#                 else:
+#                     st.error("Incorrect code.")
 
 # --- App Page Config ---
 st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
@@ -656,18 +637,18 @@ def channel_interface():
             db.collection("channels").document(ch['name'].lower()).update({"followers":firestore.ArrayUnion([st.session_state.username])})
             st.success("Now following.")
 
-# === MAIN ===
-if not st.session_state.logged_in:
-    option = st.radio("Choose Option", ["🔐 Login", "📝 Sign Up", "🔑 Forgot Password"], key="auth_radio")
+# # === MAIN ===
+# if not st.session_state.logged_in:
+#     option = st.radio("Choose Option", ["🔐 Login", "📝 Sign Up", "🔑 Forgot Password"], key="auth_radio")
 
-    if option == "🔐 Login":
-        login_page()
-    elif option == "📝 Sign Up":
-        signup_page()
-    elif option == "🔑 Forgot Password":
-        password_reset()
-else:
-    st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
+#     if option == "🔐 Login":
+#         login_page()
+#     elif option == "📝 Sign Up":
+#         signup_page()
+#     elif option == "🔑 Forgot Password":
+#         password_reset()
+# else:
+#     st.markdown(f"<div class='chat-header'><h2 style='margin:0;'>🌐 SkillSwap</h2><span style='font-size:14px;'>Hello, {st.session_state.username}</span></div>", unsafe_allow_html=True)
 
     section = st.sidebar.radio(
         "📂 Menu",
