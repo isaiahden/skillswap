@@ -449,122 +449,267 @@ def chat_interface():
 
     st.markdown("""
     <style>
+    /* Main container fixes */
     .block-container {
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        max-width: 100% !important;
     }
+    
     section.main > div {
-        padding-top: 0 !important;
-        background-color: transparent !important;
+        padding-top: 1rem !important;
     }
-    header { visibility: hidden; }
-    * { color: white !important; }
+    
+    /* Sidebar fixes - Multiple selectors to ensure visibility */
+    .css-1d391kg, .css-1cypcdb, .css-1lcbmhc, .css-1outpf7 {
+        background-color: #1e1e1e !important;
+    }
+    
+    .stSidebar, .stSidebar > div, .stSidebar > div:first-child {
+        background-color: #1e1e1e !important;
+        border-right: 1px solid #333 !important;
+        display: block !important;
+        visibility: visible !important;
+    }
 
+    /* Keep header but make it minimal */
+    header[data-testid="stHeader"] { 
+        height: 0px !important;
+        visibility: hidden !important;
+    }
+
+    /* Text color fixes */
+    .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
+        color: white !important;
+    }
+
+    /* Selectbox styling */
     .stSelectbox label {
         color: white !important;
         font-weight: 600 !important;
     }
 
-    .stSelectbox div[role='button'],
-    .stSelectbox div[data-baseweb="select"],
-    div[role='listbox'] > div {
-        color: yellow !important;
-        background-color: transparent !important;
-        border-radius: 25px !important;
-        border: 1px solid white !important;
-    }
-
-    .stTextInput input {
-        background-color: white !important;
-        color: black !important;
-        border-radius: 25px !important;
-        padding: 12px 16px !important;
-    }
-
-    .stButton button {
-        background-color: #1b1f23 !important;
-        color: white !important;
+    .stSelectbox > div > div {
+        background-color: #2d2d2d !important;
+        border: 1px solid #555 !important;
         border-radius: 8px !important;
-        padding: 8px 16px !important;
+    }
+
+    .stSelectbox > div > div > div {
+        color: white !important;
+    }
+
+    /* Text input styling */
+    .stTextInput > div > div > input {
+        background-color: #f0f0f0 !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 25px !important;
+        padding: 12px 20px !important;
         font-size: 14px !important;
     }
 
-    button.send-button {
+    .stTextInput > label {
+        display: none !important;
+    }
+
+    /* Button styling */
+    .stButton > button {
         background-color: #25d366 !important;
         color: white !important;
+        border: none !important;
         border-radius: 50% !important;
-        width: 45px !important;
-        height: 45px !important;
-        font-size: 18px !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 20px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border: none;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
+    .stButton > button:hover {
+        background-color: #1ea851 !important;
+        border: none !important;
+    }
+
+    /* Chat header */
     .chat-header {
-        background: #075e54;
+        background: linear-gradient(90deg, #075e54, #128c7e);
         padding: 15px 20px;
         border-radius: 10px 10px 0 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        color: white !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        margin-bottom: 0;
     }
 
     .partner-avatar {
-        width: 40px; height: 40px; border-radius: 50%;
-        background: #25d366; color: white;
-        display: flex; align-items: center; justify-content: center;
+        width: 45px; 
+        height: 45px; 
+        border-radius: 50%;
+        background: #25d366; 
+        color: white;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
         font-weight: bold;
+        font-size: 18px;
+        border: 2px solid white;
     }
 
+    .partner-info h4 {
+        margin: 0 !important;
+        color: white !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+    }
+
+    .online-status {
+        color: #4fc3f7 !important;
+        font-size: 12px !important;
+        margin-top: 2px !important;
+    }
+
+    /* Messages container */
     .messages-container {
-        height: 400px; overflow-y: auto;
-        padding: 20px 15px;
-        background-color: #0a1929;
+        height: 450px !important; 
+        overflow-y: auto !important;
+        padding: 15px !important;
+        background: linear-gradient(to bottom, #e5ddd5, #d1c4a5) !important;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(120,119,108,0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(120,119,108,0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(120,119,108,0.3) 0%, transparent 50%) !important;
+        border-radius: 0 0 10px 10px !important;
+        border: 1px solid #ccc !important;
+        border-top: none !important;
+        display: block !important;
+        visibility: visible !important;
     }
 
+    /* Scrollbar styling */
+    .messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+        border-radius: 3px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.3);
+        border-radius: 3px;
+    }
+
+    /* Message styling - More specific selectors */
     .message-wrapper {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        width: 100% !important;
+        clear: both !important;
     }
 
     .message-sent {
-        background: #dcf8c6;
-        color: black !important;
-        margin-left: auto;
-        border-radius: 18px;
-        padding: 10px;
-        word-wrap: break-word;
-        max-width: 75%;
-        display: inline-block;
-        font-size: 14px;
+        background: #dcf8c6 !important;
+        color: #333 !important;
+        margin-left: auto !important;
+        border-radius: 7.5px !important;
+        padding: 8px 12px !important;
+        word-wrap: break-word !important;
+        max-width: 65% !important;
+        font-size: 14px !important;
+        box-shadow: 0 1px 0.5px rgba(0,0,0,0.13) !important;
+        position: relative !important;
+        line-height: 1.4 !important;
+        float: right !important;
+        display: block !important;
+    }
+
+    .message-sent::after {
+        content: '' !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        right: -6px !important;
+        width: 0 !important;
+        height: 0 !important;
+        border: 6px solid transparent !important;
+        border-left-color: #dcf8c6 !important;
+        border-right: 0 !important;
+        border-bottom: 0 !important;
+        margin-top: -3px !important;
+        margin-right: -6px !important;
     }
 
     .message-received {
-        background: white;
-        color: black !important;
-        margin-right: auto;
-        border-radius: 18px;
-        padding: 10px;
-        word-wrap: break-word;
-        max-width: 75%;
-        display: inline-block;
-        font-size: 14px;
+        background: white !important;
+        color: #333 !important;
+        margin-right: auto !important;
+        border-radius: 7.5px !important;
+        padding: 8px 12px !important;
+        word-wrap: break-word !important;
+        max-width: 65% !important;
+        font-size: 14px !important;
+        box-shadow: 0 1px 0.5px rgba(0,0,0,0.13) !important;
+        position: relative !important;
+        line-height: 1.4 !important;
+        float: left !important;
+        display: block !important;
+    }
+
+    .message-received::before {
+        content: '' !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        left: -6px !important;
+        width: 0 !important;
+        height: 0 !important;
+        border: 6px solid transparent !important;
+        border-right-color: white !important;
+        border-left: 0 !important;
+        border-bottom: 0 !important;
+        margin-top: -3px !important;
+        margin-left: -6px !important;
     }
 
     .message-time {
         font-size: 11px;
-        color: rgba(0,0,0,0.5);
+        color: rgba(0,0,0,0.45);
         text-align: right;
         margin-top: 4px;
+        margin-bottom: -2px;
     }
 
     .no-messages {
         text-align: center;
         font-style: italic;
-        color: rgba(255,255,255,0.6);
-        padding: 40px;
+        color: rgba(100,100,100,0.8);
+        padding: 60px 20px;
+        font-size: 16px;
+    }
+
+    /* Input area styling */
+    .input-area {
+        background: #f0f0f0;
+        padding: 10px 15px;
+        border-radius: 0 0 10px 10px;
+        border: 1px solid #ccc;
+        border-top: 1px solid #ddd;
+    }
+
+    /* Control buttons */
+    .control-buttons {
+        margin-top: 15px;
+        padding: 10px 0;
+    }
+
+    .stCheckbox > label {
+        color: white !important;
+    }
+
+    /* Fix auto-refresh flicker */
+    .stApp {
+        overflow: hidden;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -588,82 +733,139 @@ def chat_interface():
 
     chat_id = "_".join(sorted([st.session_state.username, partner]))
 
-    partner_initial = partner[0].upper()
-    st.markdown(f'''
-        <div class="chat-header">
-            <div class="partner-info" style="display:flex;align-items:center;gap:10px;">
-                <div class="partner-avatar">{partner_initial}</div>
-                <div>
-                    <h4 style="margin:0;">{partner}</h4>
-                    <div class="online-status">● online</div>
-                </div>
-            </div>
-        </div>
-    ''', unsafe_allow_html=True)
-
-    # Messages
-    st.markdown('<div class="messages-container">', unsafe_allow_html=True)
-    try:
-        messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
-        count = 0
-        for m in messages:
-            d = m.to_dict()
-            if not d:
-                continue
-            count += 1
-            sent = d["sender"] == st.session_state.username
-            bubble = "message-sent" if sent else "message-received"
-            time_str = d.get("timestamp").strftime("%H:%M") if "timestamp" in d else "00:00"
-            st.markdown(f"""
-                <div class="message-wrapper">
-                    <div class="{bubble}">
-                        <div>{d['text']}</div>
-                        <div class="message-time">{time_str}</div>
+    # Chat container
+    chat_container = st.container()
+    
+    with chat_container:
+        # Chat header
+        partner_initial = partner[0].upper()
+        st.markdown(f'''
+            <div class="chat-header">
+                <div class="partner-info" style="display:flex;align-items:center;gap:12px;">
+                    <div class="partner-avatar">{partner_initial}</div>
+                    <div>
+                        <h4>{partner}</h4>
+                        <div class="online-status">● online</div>
                     </div>
                 </div>
-            """, unsafe_allow_html=True)
-        if count == 0:
-            st.markdown('<div class="no-messages">🤝 Start your conversation with a message</div>', unsafe_allow_html=True)
-    except Exception as e:
-        st.error(f"❌ Error loading messages: {str(e)}")
-    st.markdown('</div>', unsafe_allow_html=True)  # close messages container
+            </div>
+        ''', unsafe_allow_html=True)
 
-    # Message Input
-    st.markdown('<div style="padding:10px;">', unsafe_allow_html=True)
-    col1, col2 = st.columns([6, 1])
-    with col1:
-        msg = st.text_input(
-            "",
-            value="",
-            placeholder="Type a message...",
-            key=st.session_state["msg_key"],
-            label_visibility="collapsed"
-        )
-    with col2:
-        if st.button("➤", key="send_btn"):
-            if msg.strip():
+        # Messages area
+        messages_placeholder = st.empty()
+        
+        with messages_placeholder.container():
+            st.markdown('<div class="messages-container" id="messages-area">', unsafe_allow_html=True)
+            try:
+                messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
+                message_list = list(messages)  # Convert to list to avoid streaming issues
+                
+                if not message_list:
+                    st.markdown('<div class="no-messages">🤝 Start your conversation with a message below</div>', unsafe_allow_html=True)
+                else:
+                    for m in message_list:
+                        d = m.to_dict()
+                        if not d or 'text' not in d:
+                            continue
+                            
+                        sent = d["sender"] == st.session_state.username
+                        bubble_class = "message-sent" if sent else "message-received"
+                        
+                        # Format timestamp
+                        if "timestamp" in d and d["timestamp"]:
+                            try:
+                                time_str = d["timestamp"].strftime("%H:%M")
+                            except:
+                                time_str = "00:00"
+                        else:
+                            time_str = "00:00"
+                        
+                        # Escape HTML in message text and preserve line breaks
+                        message_text = str(d['text']).replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br>')
+                        
+                        st.markdown(f"""
+                            <div class="message-wrapper">
+                                <div class="{bubble_class}">
+                                    <div style="word-break: break-word;">{message_text}</div>
+                                    <div class="message-time">{time_str}</div>
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+            except Exception as e:
+                st.error(f"❌ Error loading messages: {str(e)}")
+            
+            # Auto-scroll to bottom
+            st.markdown('''
+                <script>
+                setTimeout(function() {
+                    var messagesArea = document.getElementById('messages-area');
+                    if (messagesArea) {
+                        messagesArea.scrollTop = messagesArea.scrollHeight;
+                    }
+                }, 100);
+                </script>
+            ''', unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Message input area
+        st.markdown('<div class="input-area">', unsafe_allow_html=True)
+        input_col1, input_col2 = st.columns([5, 1])
+        
+        with input_col1:
+            msg = st.text_input(
+                "",
+                value="",
+                placeholder="Type a message...",
+                key=st.session_state["msg_key"],
+                label_visibility="collapsed"
+            )
+        
+        with input_col2:
+            send_pressed = st.button("➤", key="send_btn", help="Send message")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Handle message sending
+        if send_pressed and msg.strip():
+            try:
                 db.collection("chats").document(chat_id).collection("messages").add({
                     "sender": st.session_state.username,
                     "receiver": partner,
                     "text": msg.strip(),
                     "timestamp": datetime.now()
                 })
-                # Increment key to force input refresh
+                # Increment key to clear input
                 current_key = int(st.session_state["msg_key"].split("_")[-1])
                 st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
                 st.rerun()
-            else:
-                st.warning("⚠️ Please enter a message before sending.")
-    st.markdown('</div>', unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"❌ Error sending message: {str(e)}")
+        elif send_pressed and not msg.strip():
+            st.warning("⚠️ Please enter a message before sending.")
 
     # Chat controls
-    col1, col2 = st.columns(2)
-    with col1:
+    st.markdown('<div class="control-buttons">', unsafe_allow_html=True)
+    control_col1, control_col2, control_col3 = st.columns([2, 2, 2])
+    
+    with control_col1:
         if st.button("🔄 Refresh Chat"):
             st.rerun()
-    with col2:
-        live = st.checkbox("🔴 Live Chat", value=True)
+    
+    with control_col2:
+        if st.button("🗑️ Clear Input"):
+            current_key = int(st.session_state["msg_key"].split("_")[-1])
+            st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
+            st.rerun()
+    
+    with control_col3:
+        # Live chat with 0.2 second refresh
+        live = st.checkbox("🔴 Live Chat", value=True, key="live_chat")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
+    # Auto-refresh for live chat every 0.2 seconds
     if live:
         time.sleep(0.2)
         st.rerun()
