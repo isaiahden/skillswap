@@ -573,7 +573,7 @@ def chat_interface():
 
     /* Input area */
     .input-area {
-        background: #f0f0f0;
+        background: #0f172a;
         padding: 10px 15px;
         border: 1px solid #ccc;
         border-top: 1px solid #ddd;
