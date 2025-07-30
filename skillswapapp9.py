@@ -594,16 +594,6 @@ def chat_interface():
     .stButton button[title="Go back to contact selection"]:hover {
         background-color: #2c3e50;
     }
-
-    /* Exit chat button styling */
-    .stButton button:contains("🚪") {
-        background-color: #e74c3c;
-        color: white;
-    }
-
-    .stButton button:contains("🚪"):hover {
-        background-color: #c0392b;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -642,8 +632,11 @@ def chat_interface():
     
     with header_col1:
         if st.button("← Back", key="back_btn", help="Go back to contact selection"):
-            # Clear the current partner (not the selectbox directly)
+            # Clear the current partner and reset selectbox
             st.session_state["current_partner"] = ""
+            st.session_state["partner_select"] = ""
+            if 'live_chat' in st.session_state:
+                st.session_state.live_chat = False
             st.rerun()
     
     with header_col2:
@@ -742,22 +735,10 @@ def chat_interface():
         # Check if user pressed Enter by detecting new line or if message changed significantly
         st.session_state["last_msg"] = msg
 
-    # Controls
+    # Controls - Only Live Chat checkbox now
     st.markdown("---")
     
-    col1, col2 = st.columns([2, 2])
-    
-    with col1:
-        live = st.checkbox("🔴 Live Chat", value=True)
-    
-    with col2:
-        if st.button("🚪 Exit Chat", key="exit_chat_btn"):
-            # Clear current partner and disable live chat
-            st.session_state["current_partner"] = ""
-            if 'live_chat' in st.session_state:
-                st.session_state.live_chat = False
-            st.success("👋 Left the chat")
-            st.rerun()
+    live = st.checkbox("🔴 Live Chat", value=True)
 
     st.markdown('</div>', unsafe_allow_html=True)  # Close chat wrapper
 
