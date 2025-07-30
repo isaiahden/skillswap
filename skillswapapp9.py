@@ -571,14 +571,14 @@ def chat_interface():
 
     st.markdown("### 👥 Select Chat Partner")
 
-try:
-    users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
-    if not users:
-        st.warning("⚠️ No other users available to chat with.")
+ try:
+        users = [...]
+        if not users:
+            st.warning("⚠️ No other users available to chat with.")
+            return
+    except Exception as e:
+        st.error(f"❌ Error loading users: {str(e)}")
         return
-except Exception as e:
-    st.error(f"❌ Error loading users: {str(e)}")
-    return
 
 
     partner = st.selectbox("Choose a contact:", [""] + users, key="partner_select")
