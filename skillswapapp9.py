@@ -456,420 +456,153 @@ def show_notifications():
             db.collection("users").document(st.session_state.username).update({"notifications":[]})
             st.sidebar.success("Cleared!")
 
+import time  # Place this at the top of your script
+
 def chat_interface():
     # WhatsApp-style chat interface with enhanced visibility
-    st.markdown("""
-        <style>
-        /* FORCE ALL TEXT TO BE VISIBLE */
-        * {
-            color: white !important;
-        }
-        
-        /* WhatsApp-style chat container */
-        .whatsapp-chat {
-            background: linear-gradient(to bottom, #0f4c75, #3282b8, #0f4c75);
-            min-height: 500px;
-            border-radius: 10px;
-            padding: 0;
-            margin: 10px 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* Chat header - WhatsApp style */
-        .chat-header {
-            background: #075e54;
-            color: white !important;
-            padding: 15px 20px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .chat-header h4 {
-            margin: 0 !important;
-            color: white !important;
-            font-weight: 600 !important;
-        }
-        
-        .partner-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .partner-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #25d366;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-        }
-        
-        /* Messages container - WhatsApp style */
-        .messages-container {
-            padding: 20px 15px;
-            height: 400px;
-            overflow-y: auto;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="chat-bg" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23chat-bg)"/></svg>');
-            background-color: #0a1929;
-        }
-        
-        /* Message bubbles - WhatsApp style */
-        .message-wrapper {
-            margin-bottom: 15px;
-            clear: both;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message-sent-wrapper {
-            align-items: flex-end;
-        }
-        
-        .message-received-wrapper {
-            align-items: flex-start;
-        }
-        
-        .message-bubble {
-            max-width: 75%;
-            padding: 8px 12px 6px 12px;
-            border-radius: 18px;
-            position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            word-wrap: break-word;
-            line-height: 1.4;
-        }
-        
-        .message-sent {
-            background: #dcf8c6;
-            color: #000 !important;
-            border-bottom-right-radius: 4px;
-            margin-left: auto;
-        }
-        
-        .message-sent::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: -8px;
-            width: 0;
-            height: 0;
-            border: 8px solid transparent;
-            border-left-color: #dcf8c6;
-            border-bottom: 0;
-        }
-        
-        .message-received {
-            background: white;
-            color: #000 !important;
-            border-bottom-left-radius: 4px;
-            margin-right: auto;
-        }
-        
-        .message-received::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: -8px;
-            width: 0;
-            height: 0;
-            border: 8px solid transparent;
-            border-right-color: white;
-            border-bottom: 0;
-        }
-        
-        .message-content {
-            color: inherit !important;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        
-        .message-time {
-            font-size: 11px;
-            color: rgba(0,0,0,0.5) !important;
-            text-align: right;
-            margin-top: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 3px;
-        }
-        
-        .message-status {
-            color: #4fc3f7 !important;
-            font-size: 12px;
-        }
-        
-        /* Input area - WhatsApp style */
-        .input-container {
-            background: #f0f0f0;
-            padding: 10px 15px;
-            border-radius: 0 0 10px 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        /* Selectbox styling */
-        .stSelectbox label {
-            color: white !important;
-            font-weight: 600 !important;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important;
-        }
-        .stSelectbox div[role='button'] {
-            color: black !important;
-            background-color: white !important;
-            border-radius: 25px !important;
-            border: none !important;
-            padding: 8px 16px !important;
-        }
-        .stSelectbox div[data-baseweb="select"] {
-            background-color: white !important;
-            border-radius: 25px !important;
-        }
-        div[role='listbox'] > div {
-            color: black !important;
-            background-color: white !important;
-        }
-        
-        /* Text input styling - WhatsApp style */
-        .stTextInput input {
-            background-color: white !important;
-            color: black !important;
-            border: none !important;
-            border-radius: 25px !important;
-            padding: 12px 16px !important;
-            font-size: 14px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-        }
-        
-        .stTextInput input::placeholder {
-            color: rgba(0,0,0,0.5) !important;
-        }
-        
-        /* Send button - WhatsApp style */
-        .stButton button {
-            background-color: #25d366 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 45px !important;
-            height: 45px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 18px !important;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
-        }
-        
-        .stButton button:hover {
-            background-color: #128c7e !important;
-            transform: scale(1.05) !important;
-        }
-        
-        /* Typing indicator */
-        .typing-indicator {
-            color: rgba(255,255,255,0.7) !important;
-            font-style: italic;
-            font-size: 12px;
-            text-align: center;
-            padding: 5px;
-        }
-        
-        /* Online status */
-        .online-status {
-            color: #25d366 !important;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        /* No messages state */
-        .no-messages {
-            text-align: center;
-            color: rgba(255,255,255,0.6) !important;
-            font-style: italic;
-            padding: 50px 20px;
-        }
-        
-        /* Scrollbar styling */
-        .messages-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .messages-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.5);
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    # Partner selection
+    st.markdown("""<style>
+    * { color: white !important; }
+    .stSelectbox label { color: white !important; font-weight: 600 !important; }
+    .stSelectbox div[role='button'],
+    .stSelectbox div[data-baseweb="select"],
+    div[role='listbox'] > div {
+        color: black !important;
+        background-color: white !important;
+        border-radius: 25px !important;
+    }
+    .stTextInput input {
+        background-color: white !important;
+        color: black !important;
+        border-radius: 25px !important;
+        padding: 12px 16px !important;
+    }
+    .stTextInput input::placeholder {
+        color: rgba(0,0,0,0.5) !important;
+    }
+    .stButton button {
+        background-color: #25d366 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 45px !important;
+        height: 45px !important;
+    }
+    .chat-header {
+        background: #075e54;
+        padding: 15px 20px;
+        border-radius: 10px 10px 0 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        color: white !important;
+    }
+    .partner-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: #25d366; color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold;
+    }
+    .messages-container {
+        height: 400px; overflow-y: auto;
+        padding: 20px 15px;
+        background-color: #0a1929;
+    }
+    .message-wrapper { margin-bottom: 15px; display: flex; }
+    .message-sent { background: #dcf8c6; color: black; margin-left: auto; border-radius: 18px; padding: 10px; }
+    .message-received { background: white; color: black; margin-right: auto; border-radius: 18px; padding: 10px; }
+    .message-time { font-size: 11px; color: rgba(0,0,0,0.5); text-align: right; }
+    .no-messages { text-align: center; font-style: italic; color: rgba(255,255,255,0.6); padding: 40px; }
+    </style>""", unsafe_allow_html=True)
+
     st.markdown("### 👥 Select Chat Partner")
     
     try:
-        users = []
-        user_docs = db.collection("users").stream()
-        for doc in user_docs:
-            if doc.id != st.session_state.username:
-                users.append(doc.id)
-        
+        users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
         if not users:
             st.warning("⚠️ No other users available to chat with.")
             return
-            
     except Exception as e:
         st.error(f"❌ Error loading users: {str(e)}")
         return
-    
+
     partner = st.selectbox("Choose a contact:", [""] + users, key="partner_select")
-    
     if not partner:
         st.info("💬 Select a contact to start chatting")
         return
+
+    chat_id = "_".join(sorted([st.session_state.username, partner]))
     
-    # WhatsApp-style chat interface
+    # Chat box UI
     st.markdown('<div class="whatsapp-chat">', unsafe_allow_html=True)
-    
-    # Chat header with partner info
-    partner_initial = partner[0].upper() if partner else "?"
+    partner_initial = partner[0].upper()
     st.markdown(f'''
         <div class="chat-header">
-            <div class="partner-info">
+            <div class="partner-info" style="display:flex;align-items:center;gap:10px;">
                 <div class="partner-avatar">{partner_initial}</div>
                 <div>
-                    <h4>{partner}</h4>
+                    <h4 style="margin:0;">{partner}</h4>
                     <div class="online-status">● online</div>
                 </div>
             </div>
         </div>
     ''', unsafe_allow_html=True)
-    
-    # Messages container
+
     st.markdown('<div class="messages-container">', unsafe_allow_html=True)
-    
-    chat_id = "_".join(sorted([st.session_state.username, partner]))
-    
+
     try:
-        messages_ref = db.collection("chats").document(chat_id).collection("messages")
-        msgs = messages_ref.order_by("timestamp").stream()
-        
-        message_count = 0
-        for m in msgs:
+        messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
+        count = 0
+        for m in messages:
             d = m.to_dict()
-            if not d:
-                continue
-                
-            message_count += 1
-            sent = d.get("sender") == st.session_state.username
-            
-            # Format timestamp
-            timestamp = d.get('timestamp')
-            if timestamp:
-                try:
-                    time_str = timestamp.strftime('%H:%M')
-                except:
-                    time_str = "00:00"
-            else:
-                time_str = "00:00"
-            
-            message_text = d.get('text', '').replace('\n', '<br>')
-            
-            wrapper_class = "message-sent-wrapper" if sent else "message-received-wrapper"
-            bubble_class = "message-sent" if sent else "message-received"
-            status_icon = "✓✓" if sent else ""
-            
-            st.markdown(f'''
-                <div class="message-wrapper {wrapper_class}">
-                    <div class="message-bubble {bubble_class}">
-                        <div class="message-content">{message_text}</div>
-                        <div class="message-time">
-                            {time_str}
-                            {f'<span class="message-status">{status_icon}</span>' if sent else ''}
-                        </div>
+            if not d: continue
+            count += 1
+            sent = d["sender"] == st.session_state.username
+            bubble = "message-sent" if sent else "message-received"
+            time_str = d.get("timestamp").strftime("%H:%M") if "timestamp" in d else "00:00"
+            st.markdown(f"""
+                <div class="message-wrapper">
+                    <div class="{bubble}">
+                        <div>{d['text']}</div>
+                        <div class="message-time">{time_str}</div>
                     </div>
                 </div>
-            ''', unsafe_allow_html=True)
-        
-        if message_count == 0:
+            """, unsafe_allow_html=True)
+        if count == 0:
             st.markdown('<div class="no-messages">🤝 Start your conversation with a message</div>', unsafe_allow_html=True)
-            
     except Exception as e:
         st.error(f"❌ Error loading messages: {str(e)}")
-    
-    st.markdown('</div>', unsafe_allow_html=True)  # Close messages container
-    
-    # Input area
-    st.markdown('<div class="input-container">', unsafe_allow_html=True)
-    
+
+    st.markdown('</div>', unsafe_allow_html=True)  # End messages
+
+    # Message input
+    st.markdown('<div style="padding:10px;">', unsafe_allow_html=True)
     col1, col2 = st.columns([6, 1])
-    
     with col1:
-        txt = st.text_input(
-            "", 
-            key="msg_input", 
-            placeholder="Type a message...",
-            label_visibility="collapsed"
-        )
-    
+        msg = st.text_input("", placeholder="Type a message...", key="msg_input", label_visibility="collapsed")
     with col2:
-        send_button = st.button("➤", help="Send message", key="send_btn")
-    
-    st.markdown('</div>', unsafe_allow_html=True)  # Close input container
-    st.markdown('</div>', unsafe_allow_html=True)  # Close whatsapp-chat
-    
-    # Send message functionality
-    if send_button and txt and txt.strip():
-        try:
-            messages_ref = db.collection("chats").document(chat_id).collection("messages")
-            messages_ref.add({
-                "sender": st.session_state.username,
-                "receiver": partner,
-                "text": txt.strip(),
-                "timestamp": datetime.now(),
-                "status": "sent"
-            })
-            
-            st.session_state.msg_input = ""
-            st.rerun()
-            
-        except Exception as e:
-            st.error(f"❌ Error sending message: {str(e)}")
-    
-    elif send_button and not txt.strip():
-        st.warning("⚠️ Please enter a message before sending.")
-    
-    # Live chat functionality
-    col1, col2 = st.columns([1, 1])
-    
+        if st.button("➤", key="send_btn"):
+            if msg.strip():
+                db.collection("chats").document(chat_id).collection("messages").add({
+                    "sender": st.session_state.username,
+                    "receiver": partner,
+                    "text": msg.strip(),
+                    "timestamp": datetime.now()
+                })
+                st.session_state.msg_input = ""
+                st.rerun()
+            else:
+                st.warning("⚠️ Please enter a message before sending.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Chat controls
+    col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔄 Refresh Chat", help="Get new messages"):
+        if st.button("🔄 Refresh Chat"):
             st.rerun()
-    
     with col2:
-        live_mode = st.checkbox("🔴 Live Chat", value=True, help="Real-time updates")
-    
-    # Auto-refresh for live chat (always on by default)
-    if live_mode:
-        # Use placeholder to create live updates
-        placeholder = st.empty()
-        import time
-        time.sleep(2)  # 2 second refresh rate
+        live = st.checkbox("🔴 Live Chat", value=True)
+
+    if live:
+        time.sleep(2)
         st.rerun()
+
 
 
 def view_profiles():
