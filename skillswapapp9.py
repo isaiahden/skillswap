@@ -443,11 +443,10 @@ def chat_interface():
     import time
     from datetime import datetime
 
-    # Initialize msg_key safely
+    # Initialize dynamic message input key
     if "msg_key" not in st.session_state:
-        st.session_state.msg_key = "msg_input_1"
+        st.session_state["msg_key"] = "msg_input_1"
 
-    # WhatsApp-style chat interface with enhanced visibility
     st.markdown("""
     <style>
     .block-container {
@@ -460,24 +459,28 @@ def chat_interface():
     }
     header { visibility: hidden; }
     * { color: white !important; }
+
     .stSelectbox label {
         color: white !important;
         font-weight: 600 !important;
     }
+
     .stSelectbox div[role='button'],
     .stSelectbox div[data-baseweb="select"],
     div[role='listbox'] > div {
         color: yellow !important;
         background-color: transparent !important;
         border-radius: 25px !important;
-        border: 1px solid black !important;
+        border: 1px solid white !important;
     }
+
     .stTextInput input {
         background-color: white !important;
         color: black !important;
         border-radius: 25px !important;
         padding: 12px 16px !important;
     }
+
     .stButton button {
         background-color: #1b1f23 !important;
         color: white !important;
@@ -485,6 +488,7 @@ def chat_interface():
         padding: 8px 16px !important;
         font-size: 14px !important;
     }
+
     button.send-button {
         background-color: #25d366 !important;
         color: white !important;
@@ -497,6 +501,7 @@ def chat_interface():
         justify-content: center !important;
         border: none;
     }
+
     .chat-header {
         background: #075e54;
         padding: 15px 20px;
@@ -504,42 +509,57 @@ def chat_interface():
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white !important;
     }
+
     .partner-avatar {
         width: 40px; height: 40px; border-radius: 50%;
         background: #25d366; color: white;
         display: flex; align-items: center; justify-content: center;
         font-weight: bold;
     }
+
     .messages-container {
         height: 400px; overflow-y: auto;
         padding: 20px 15px;
         background-color: #0a1929;
     }
-    .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; }
+
+    .message-wrapper {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
     .message-sent {
-        background: green;
+        background: #dcf8c6;
         color: black !important;
         margin-left: auto;
         border-radius: 18px;
         padding: 10px;
+        word-wrap: break-word;
         max-width: 75%;
+        display: inline-block;
         font-size: 14px;
     }
+
     .message-received {
-        background: green;
+        background: white;
         color: black !important;
         margin-right: auto;
         border-radius: 18px;
         padding: 10px;
+        word-wrap: break-word;
         max-width: 75%;
+        display: inline-block;
         font-size: 14px;
     }
+
     .message-time {
         font-size: 11px;
         color: rgba(0,0,0,0.5);
         text-align: right;
         margin-top: 4px;
     }
+
     .no-messages {
         text-align: center;
         font-style: italic;
@@ -551,6 +571,7 @@ def chat_interface():
 
     st.markdown("### 👥 Select Chat Partner")
 
+    # Load users
     try:
         users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
         if not users:
@@ -567,7 +588,6 @@ def chat_interface():
 
     chat_id = "_".join(sorted([st.session_state.username, partner]))
 
-    st.markdown('<div class="whatsapp-chat">', unsafe_allow_html=True)
     partner_initial = partner[0].upper()
     st.markdown(f'''
         <div class="chat-header">
@@ -581,8 +601,8 @@ def chat_interface():
         </div>
     ''', unsafe_allow_html=True)
 
+    # Messages
     st.markdown('<div class="messages-container">', unsafe_allow_html=True)
-
     try:
         messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
         count = 0
@@ -606,48 +626,48 @@ def chat_interface():
             st.markdown('<div class="no-messages">🤝 Start your conversation with a message</div>', unsafe_allow_html=True)
     except Exception as e:
         st.error(f"❌ Error loading messages: {str(e)}")
+    st.markdown('</div>', unsafe_allow_html=True)  # close messages container
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # --- Message input ---
+    # Message Input
     st.markdown('<div style="padding:10px;">', unsafe_allow_html=True)
     col1, col2 = st.columns([6, 1])
     with col1:
-        # Use a fixed key and separate session variable
         msg = st.text_input(
             "",
-            value=st.session_state.get("typed_msg", ""),
+            value="",
             placeholder="Type a message...",
-            key="chat_input_field",
+            key=st.session_state["msg_key"],
             label_visibility="collapsed"
         )
-        st.session_state["typed_msg"] = msg  # Always keep latest input
     with col2:
         if st.button("➤", key="send_btn"):
-            if st.session_state["typed_msg"].strip():
+            if msg.strip():
                 db.collection("chats").document(chat_id).collection("messages").add({
                     "sender": st.session_state.username,
                     "receiver": partner,
-                    "text": st.session_state["typed_msg"].strip(),
+                    "text": msg.strip(),
                     "timestamp": datetime.now()
                 })
-                st.session_state["typed_msg"] = ""  # Clear the input manually
-                st.rerun()  # Works on most systems; if not, reload by another means
+                # Increment key to force input refresh
+                current_key = int(st.session_state["msg_key"].split("_")[-1])
+                st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
+                st.rerun()
             else:
                 st.warning("⚠️ Please enter a message before sending.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- Chat controls ---
+    # Chat controls
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🔄 Refresh Chat"):
-            st.session_state["msg_key"] = f"msg_input_{int(st.session_state['msg_key'].split('_')[-1]) + 1}"
+            st.rerun()
     with col2:
         live = st.checkbox("🔴 Live Chat", value=True)
 
     if live:
-        time.sleep(2)
-        st.session_state["msg_key"] = f"msg_input_{int(st.session_state['msg_key'].split('_')[-1]) + 1}"
+        time.sleep(0.2)
+        st.rerun()
+
 
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
