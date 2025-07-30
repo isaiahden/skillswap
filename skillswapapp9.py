@@ -496,7 +496,7 @@ def chat_interface():
 
     /* Chat header */
     .chat-header {
-        background: #f8f9fa;
+        background: #0f172a;
         padding: 15px 20px;
         border-radius: 10px 10px 0 0;
         border: 1px solid #ddd;
