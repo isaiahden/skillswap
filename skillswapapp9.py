@@ -467,10 +467,10 @@ def chat_interface():
     .stSelectbox div[role='button'],
     .stSelectbox div[data-baseweb="select"],
     div[role='listbox'] > div {
-        color: white !important;
+        color: yellow !important;
         background-color: transparent !important;
         border-radius: 25px !important;
-        border: 1px solid white !important;
+        border: 1px solid black !important;
     }
     .stTextInput input {
         background-color: white !important;
@@ -517,7 +517,7 @@ def chat_interface():
     }
     .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; }
     .message-sent {
-        background: #dcf8c6;
+        background: green;
         color: black !important;
         margin-left: auto;
         border-radius: 18px;
@@ -526,7 +526,7 @@ def chat_interface():
         font-size: 14px;
     }
     .message-received {
-        background: white;
+        background: green;
         color: black !important;
         margin-right: auto;
         border-radius: 18px;
