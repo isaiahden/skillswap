@@ -571,15 +571,15 @@ def chat_interface():
 
     st.markdown("### 👥 Select Chat Partner")
 
- try:
-        users = [...]
+
+    try:
+        users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
         if not users:
             st.warning("⚠️ No other users available to chat with.")
             return
     except Exception as e:
         st.error(f"❌ Error loading users: {str(e)}")
         return
-
 
     partner = st.selectbox("Choose a contact:", [""] + users, key="partner_select")
     if not partner:
@@ -609,7 +609,8 @@ def chat_interface():
         count = 0
         for m in messages:
             d = m.to_dict()
-            if not d: continue
+            if not d:
+                continue
             count += 1
             sent = d["sender"] == st.session_state.username
             bubble = "message-sent" if sent else "message-received"
@@ -666,6 +667,7 @@ def chat_interface():
     if live:
         time.sleep(2)
         st.rerun()
+
 
 
 def view_profiles():
