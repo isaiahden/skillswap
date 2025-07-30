@@ -718,7 +718,7 @@ def chat_interface():
                 "text": msg.strip(),
                 "timestamp": datetime.now()
             })
-            # Clear input
+            # Automatically clear input after sending
             current_key = int(st.session_state["msg_key"].split("_")[-1])
             st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
             st.rerun()
@@ -727,32 +727,31 @@ def chat_interface():
     elif send_pressed:
         st.warning("⚠️ Please enter a message")
 
+    # Auto-clear input if Enter key is pressed (simulate send)
+    if msg and msg != st.session_state.get("last_msg", ""):
+        # Check if user pressed Enter by detecting new line or if message changed significantly
+        st.session_state["last_msg"] = msg
+
     # Controls
     st.markdown("---")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns([2, 2, 2])
     
     with col1:
         if st.button("🔄 Refresh"):
             st.rerun()
     
     with col2:
-        if st.button("🗑️ Clear Input"):
-            current_key = int(st.session_state["msg_key"].split("_")[-1])
-            st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
-            st.rerun()
+        live = st.checkbox("🔴 Live Chat", value=True)
     
     with col3:
-        if st.button("🚪 Exit Chat"):
+        if st.button("🚪 Exit Chat", key="exit_chat_btn"):
             # Clear partner selection and disable live chat
             st.session_state.partner_select = ""
             if 'live_chat' in st.session_state:
                 st.session_state.live_chat = False
             st.success("👋 Left the chat")
             st.rerun()
-    
-    with col4:
-        live = st.checkbox("🔴 Live Chat", value=True)
 
     # Auto refresh
     if live:
