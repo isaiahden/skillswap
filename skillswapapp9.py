@@ -585,7 +585,7 @@ def chat_interface():
         color: white;
         border: none;
         border-radius: 8px;
-        padding: 8px 12px;
+        padding: 8px 14px;
         font-size: 14px;
         white-space: nowrap;       /* ✅ Prevents text from wrapping */
         display: inline-block;     /* ✅ Ensures horizontal layout */
