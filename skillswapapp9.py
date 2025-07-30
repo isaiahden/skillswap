@@ -487,13 +487,32 @@ def chat_interface():
     .stTextInput input::placeholder {
         color: rgba(0,0,0,0.5) !important;
     }
+
+    /* Default buttons (e.g. Refresh, Logout) */
     .stButton button {
+        background-color: #1b1f23 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+    }
+
+    /* Custom round SEND button only */
+    button.send-button {
         background-color: #25d366 !important;
         color: white !important;
+        border: none !important;
         border-radius: 50% !important;
         width: 45px !important;
         height: 45px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 18px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+        cursor: pointer;
     }
+
     .chat-header {
         background: #075e54;
         padding: 15px 20px;
@@ -520,6 +539,7 @@ def chat_interface():
     </style>""", unsafe_allow_html=True)
 
     st.markdown("### 👥 Select Chat Partner")
+
     
     try:
         users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
