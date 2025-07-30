@@ -580,7 +580,6 @@ def chat_interface():
         border-radius: 0 0 10px 10px;
     }
 
-    /* Back button styling */
     .stButton button[title="Go back to contact selection"] {
         background-color: #34495e;
         color: white;
@@ -588,9 +587,14 @@ def chat_interface():
         border-radius: 8px;
         padding: 8px 12px;
         font-size: 14px;
+        white-space: nowrap;       /* ✅ Prevents text from wrapping */
+        display: inline-block;     /* ✅ Ensures horizontal layout */
         width: auto;
         height: auto;
+        text-align: center;        /* ✅ Center the text */
+        vertical-align: middle;    /* ✅ Align vertically (optional) */
     }
+
 
     .stButton button[title="Go back to contact selection"]:hover {
         background-color: #2c3e50;
