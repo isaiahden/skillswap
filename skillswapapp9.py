@@ -21,15 +21,15 @@ if not firebase_admin._apps:
 # Always set db after Firebase is initialized (even if it was already initialized)
 db = firestore.client()
 
-# Live chat functionality (already in your code)
-with col2:
-    live_mode = st.checkbox("🔴 Live Chat", value=True, help="Real-time updates")
+# # Live chat functionality (already in your code)
+# with col2:
+#     live_mode = st.checkbox("🔴 Live Chat", value=True, help="Real-time updates")
 
-# Auto-refresh for live chat (always on by default)
-if live_mode:
-    import time
-    time.sleep(2)  # 2 second refresh rate
-    st.rerun()
+# # Auto-refresh for live chat (always on by default)
+# if live_mode:
+#     import time
+#     time.sleep(2)  # 2 second refresh rate
+#     st.rerun()
     
 st.markdown("""
 <style>
