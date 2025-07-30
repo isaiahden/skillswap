@@ -759,18 +759,19 @@ def chat_interface():
             st.success("👋 Left the chat")
             st.rerun()
 
-    st.markdown('</div>', unsafe_allow_html=True)  # Close chat container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close chat wrapper
 
-    # Auto refresh with reduced frequency if no recent activity
+    # Smart refresh - only refresh if needed and reduce frequency when stable
     if live:
-        # Check if there was recent message activity
         current_time = time.time()
-        if 'last_message_time' not in st.session_state:
-            st.session_state.last_message_time = current_time
         
-        # Refresh every 0.2 seconds for real-time feel
-        time.sleep(0.2)
-        st.rerun()
+        # Only refresh every 1 second instead of 0.2 to reduce flicker
+        if current_time - st.session_state.get("last_refresh_time", 0) > 1.0:
+            st.session_state["last_refresh_time"] = current_time
+            st.rerun()
+        else:
+            # Sleep without refresh to maintain responsiveness
+            time.sleep(0.1)
 
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
