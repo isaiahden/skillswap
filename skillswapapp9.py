@@ -449,89 +449,50 @@ def chat_interface():
 
     st.markdown("""
     <style>
-    /* Main container fixes */
+    /* Basic layout fixes */
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-        max-width: 100% !important;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
     }
     
-    section.main > div {
-        padding-top: 1rem !important;
-    }
-    
-    /* Sidebar fixes - Multiple selectors to ensure visibility */
-    .css-1d391kg, .css-1cypcdb, .css-1lcbmhc, .css-1outpf7 {
-        background-color: #1e1e1e !important;
-    }
-    
-    .stSidebar, .stSidebar > div, .stSidebar > div:first-child {
-        background-color: #1e1e1e !important;
-        border-right: 1px solid #333 !important;
-        display: block !important;
-        visibility: visible !important;
+    /* Sidebar styling */
+    .stSidebar > div {
+        background-color: #1e1e1e;
     }
 
-    /* Keep header but make it minimal */
-    header[data-testid="stHeader"] { 
-        height: 0px !important;
-        visibility: hidden !important;
-    }
-
-    /* Text color fixes */
-    .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
-        color: white !important;
+    /* Text colors */
+    .stMarkdown h3 {
+        color: white;
     }
 
     /* Selectbox styling */
     .stSelectbox label {
-        color: white !important;
-        font-weight: 600 !important;
-    }
-
-    .stSelectbox > div > div {
-        background-color: #2d2d2d !important;
-        border: 1px solid #555 !important;
-        border-radius: 8px !important;
-    }
-
-    .stSelectbox > div > div > div {
-        color: white !important;
+        color: white;
+        font-weight: 600;
     }
 
     /* Text input styling */
-    .stTextInput > div > div > input {
-        background-color: #f0f0f0 !important;
-        color: #333 !important;
-        border: 1px solid #ddd !important;
-        border-radius: 25px !important;
-        padding: 12px 20px !important;
-        font-size: 14px !important;
+    .stTextInput input {
+        background-color: #f0f0f0;
+        color: #333;
+        border-radius: 25px;
+        padding: 12px 20px;
+        border: 1px solid #ddd;
     }
 
-    .stTextInput > label {
-        display: none !important;
+    /* Send button styling */
+    .stButton button {
+        background-color: #25d366;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
     }
 
-    /* Button styling */
-    .stButton > button {
-        background-color: #25d366 !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 50% !important;
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 20px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .stButton > button:hover {
-        background-color: #1ea851 !important;
-        border: none !important;
+    .stButton button:hover {
+        background-color: #1ea851;
     }
 
     /* Chat header */
@@ -539,7 +500,7 @@ def chat_interface():
         background: linear-gradient(90deg, #075e54, #128c7e);
         padding: 15px 20px;
         border-radius: 10px 10px 0 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        color: white;
         margin-bottom: 0;
     }
 
@@ -554,162 +515,95 @@ def chat_interface():
         justify-content: center;
         font-weight: bold;
         font-size: 18px;
-        border: 2px solid white;
-    }
-
-    .partner-info h4 {
-        margin: 0 !important;
-        color: white !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-    }
-
-    .online-status {
-        color: #4fc3f7 !important;
-        font-size: 12px !important;
-        margin-top: 2px !important;
     }
 
     /* Messages container */
     .messages-container {
-        height: 450px !important; 
-        overflow-y: auto !important;
-        padding: 15px !important;
-        background: linear-gradient(to bottom, #e5ddd5, #d1c4a5) !important;
-        background-image: 
-            radial-gradient(circle at 20% 50%, rgba(120,119,108,0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(120,119,108,0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, rgba(120,119,108,0.3) 0%, transparent 50%) !important;
-        border-radius: 0 0 10px 10px !important;
-        border: 1px solid #ccc !important;
-        border-top: none !important;
-        display: block !important;
-        visibility: visible !important;
+        height: 400px; 
+        overflow-y: auto;
+        padding: 15px;
+        background: #e5ddd5;
+        border: 1px solid #ccc;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
     }
 
-    /* Scrollbar styling */
-    .messages-container::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .messages-container::-webkit-scrollbar-track {
-        background: rgba(0,0,0,0.1);
-        border-radius: 3px;
-    }
-
-    .messages-container::-webkit-scrollbar-thumb {
-        background: rgba(0,0,0,0.3);
-        border-radius: 3px;
-    }
-
-    /* Message styling - More specific selectors */
-    .message-wrapper {
-        margin-bottom: 8px !important;
-        display: flex !important;
-        width: 100% !important;
-        clear: both !important;
-    }
-
+    /* Message bubbles */
     .message-sent {
-        background: #dcf8c6 !important;
-        color: #333 !important;
-        margin-left: auto !important;
-        border-radius: 7.5px !important;
-        padding: 8px 12px !important;
-        word-wrap: break-word !important;
-        max-width: 65% !important;
-        font-size: 14px !important;
-        box-shadow: 0 1px 0.5px rgba(0,0,0,0.13) !important;
-        position: relative !important;
-        line-height: 1.4 !important;
-        float: right !important;
-        display: block !important;
-    }
-
-    .message-sent::after {
-        content: '' !important;
-        position: absolute !important;
-        bottom: 0 !important;
-        right: -6px !important;
-        width: 0 !important;
-        height: 0 !important;
-        border: 6px solid transparent !important;
-        border-left-color: #dcf8c6 !important;
-        border-right: 0 !important;
-        border-bottom: 0 !important;
-        margin-top: -3px !important;
-        margin-right: -6px !important;
+        background: #dcf8c6;
+        color: #333;
+        padding: 8px 12px;
+        border-radius: 18px;
+        margin: 5px 0 5px auto;
+        max-width: 70%;
+        font-size: 14px;
+        word-wrap: break-word;
+        display: block;
+        width: fit-content;
+        margin-left: auto;
     }
 
     .message-received {
-        background: white !important;
-        color: #333 !important;
-        margin-right: auto !important;
-        border-radius: 7.5px !important;
-        padding: 8px 12px !important;
-        word-wrap: break-word !important;
-        max-width: 65% !important;
-        font-size: 14px !important;
-        box-shadow: 0 1px 0.5px rgba(0,0,0,0.13) !important;
-        position: relative !important;
-        line-height: 1.4 !important;
-        float: left !important;
-        display: block !important;
-    }
-
-    .message-received::before {
-        content: '' !important;
-        position: absolute !important;
-        bottom: 0 !important;
-        left: -6px !important;
-        width: 0 !important;
-        height: 0 !important;
-        border: 6px solid transparent !important;
-        border-right-color: white !important;
-        border-left: 0 !important;
-        border-bottom: 0 !important;
-        margin-top: -3px !important;
-        margin-left: -6px !important;
+        background: white;
+        color: #333;
+        padding: 8px 12px;
+        border-radius: 18px;
+        margin: 5px auto 5px 0;
+        max-width: 70%;
+        font-size: 14px;
+        word-wrap: break-word;
+        display: block;
+        width: fit-content;
+        margin-right: auto;
     }
 
     .message-time {
         font-size: 11px;
-        color: rgba(0,0,0,0.45);
+        color: #666;
         text-align: right;
         margin-top: 4px;
-        margin-bottom: -2px;
     }
 
     .no-messages {
         text-align: center;
+        color: #666;
+        padding: 40px;
         font-style: italic;
-        color: rgba(100,100,100,0.8);
-        padding: 60px 20px;
-        font-size: 16px;
     }
 
-    /* Input area styling */
+    /* Input area */
     .input-area {
         background: #f0f0f0;
         padding: 10px 15px;
-        border-radius: 0 0 10px 10px;
         border: 1px solid #ccc;
         border-top: 1px solid #ddd;
+        border-radius: 0 0 10px 10px;
     }
 
-    /* Control buttons */
-    .control-buttons {
-        margin-top: 15px;
-        padding: 10px 0;
+    /* Back button styling */
+    .stButton button[title="Go back to contact selection"] {
+        background-color: #34495e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: auto;
+        height: auto;
     }
 
-    .stCheckbox > label {
-        color: white !important;
+    .stButton button[title="Go back to contact selection"]:hover {
+        background-color: #2c3e50;
     }
 
-    /* Fix auto-refresh flicker */
-    .stApp {
-        overflow: hidden;
+    /* Exit chat button styling */
+    .stButton button:contains("🚪") {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .stButton button:contains("🚪"):hover {
+        background-color: #c0392b;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -733,139 +627,134 @@ def chat_interface():
 
     chat_id = "_".join(sorted([st.session_state.username, partner]))
 
-    # Chat container
-    chat_container = st.container()
+    # Chat header with back button
+    header_col1, header_col2 = st.columns([1, 10])
     
-    with chat_container:
-        # Chat header
+    with header_col1:
+        if st.button("← Back", key="back_btn", help="Go back to contact selection"):
+            # Clear the partner selection
+            st.session_state.partner_select = ""
+            st.rerun()
+    
+    with header_col2:
         partner_initial = partner[0].upper()
         st.markdown(f'''
             <div class="chat-header">
-                <div class="partner-info" style="display:flex;align-items:center;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;">
                     <div class="partner-avatar">{partner_initial}</div>
                     <div>
-                        <h4>{partner}</h4>
-                        <div class="online-status">● online</div>
+                        <h4 style="margin:0;color:white;">{partner}</h4>
+                        <div style="color:#4fc3f7;font-size:12px;">● online</div>
                     </div>
                 </div>
             </div>
         ''', unsafe_allow_html=True)
 
-        # Messages area
-        messages_placeholder = st.empty()
-        
-        with messages_placeholder.container():
-            st.markdown('<div class="messages-container" id="messages-area">', unsafe_allow_html=True)
-            try:
-                messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
-                message_list = list(messages)  # Convert to list to avoid streaming issues
-                
-                if not message_list:
-                    st.markdown('<div class="no-messages">🤝 Start your conversation with a message below</div>', unsafe_allow_html=True)
-                else:
-                    for m in message_list:
-                        d = m.to_dict()
-                        if not d or 'text' not in d:
-                            continue
-                            
-                        sent = d["sender"] == st.session_state.username
-                        bubble_class = "message-sent" if sent else "message-received"
-                        
-                        # Format timestamp
-                        if "timestamp" in d and d["timestamp"]:
-                            try:
-                                time_str = d["timestamp"].strftime("%H:%M")
-                            except:
-                                time_str = "00:00"
-                        else:
-                            time_str = "00:00"
-                        
-                        # Escape HTML in message text and preserve line breaks
-                        message_text = str(d['text']).replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br>')
-                        
-                        st.markdown(f"""
-                            <div class="message-wrapper">
-                                <div class="{bubble_class}">
-                                    <div style="word-break: break-word;">{message_text}</div>
-                                    <div class="message-time">{time_str}</div>
-                                </div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                        
-            except Exception as e:
-                st.error(f"❌ Error loading messages: {str(e)}")
-            
-            # Auto-scroll to bottom
-            st.markdown('''
-                <script>
-                setTimeout(function() {
-                    var messagesArea = document.getElementById('messages-area');
-                    if (messagesArea) {
-                        messagesArea.scrollTop = messagesArea.scrollHeight;
-                    }
-                }, 100);
-                </script>
-            ''', unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # Message input area
-        st.markdown('<div class="input-area">', unsafe_allow_html=True)
-        input_col1, input_col2 = st.columns([5, 1])
-        
-        with input_col1:
-            msg = st.text_input(
-                "",
-                value="",
-                placeholder="Type a message...",
-                key=st.session_state["msg_key"],
-                label_visibility="collapsed"
-            )
-        
-        with input_col2:
-            send_pressed = st.button("➤", key="send_btn", help="Send message")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # Handle message sending
-        if send_pressed and msg.strip():
-            try:
-                db.collection("chats").document(chat_id).collection("messages").add({
-                    "sender": st.session_state.username,
-                    "receiver": partner,
-                    "text": msg.strip(),
-                    "timestamp": datetime.now()
-                })
-                # Increment key to clear input
-                current_key = int(st.session_state["msg_key"].split("_")[-1])
-                st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error sending message: {str(e)}")
-        elif send_pressed and not msg.strip():
-            st.warning("⚠️ Please enter a message before sending.")
-
-    # Chat controls
-    st.markdown('<div class="control-buttons">', unsafe_allow_html=True)
-    control_col1, control_col2, control_col3 = st.columns([2, 2, 2])
+    # Messages area
+    st.markdown('<div class="messages-container">', unsafe_allow_html=True)
     
-    with control_col1:
-        if st.button("🔄 Refresh Chat"):
+    try:
+        messages = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
+        message_count = 0
+        
+        for m in messages:
+            d = m.to_dict()
+            if not d or 'text' not in d:
+                continue
+                
+            message_count += 1
+            sent = d["sender"] == st.session_state.username
+            bubble_class = "message-sent" if sent else "message-received"
+            
+            # Format timestamp
+            try:
+                time_str = d.get("timestamp", datetime.now()).strftime("%H:%M")
+            except:
+                time_str = "00:00"
+            
+            # Clean message text
+            message_text = str(d['text']).replace('<', '&lt;').replace('>', '&gt;')
+            
+            st.markdown(f'''
+                <div class="{bubble_class}">
+                    <div>{message_text}</div>
+                    <div class="message-time">{time_str}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        
+        if message_count == 0:
+            st.markdown('<div class="no-messages">🤝 Start your conversation below</div>', unsafe_allow_html=True)
+            
+    except Exception as e:
+        st.error(f"❌ Error loading messages: {str(e)}")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Message input
+    st.markdown('<div class="input-area">', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([5, 1])
+    
+    with col1:
+        msg = st.text_input(
+            "",
+            value="",
+            placeholder="Type a message...",
+            key=st.session_state["msg_key"],
+            label_visibility="collapsed"
+        )
+    
+    with col2:
+        send_pressed = st.button("➤", key="send_btn")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Handle sending message
+    if send_pressed and msg.strip():
+        try:
+            db.collection("chats").document(chat_id).collection("messages").add({
+                "sender": st.session_state.username,
+                "receiver": partner,
+                "text": msg.strip(),
+                "timestamp": datetime.now()
+            })
+            # Clear input
+            current_key = int(st.session_state["msg_key"].split("_")[-1])
+            st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Error sending message: {str(e)}")
+    elif send_pressed:
+        st.warning("⚠️ Please enter a message")
+
+    # Controls
+    st.markdown("---")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("🔄 Refresh"):
             st.rerun()
     
-    with control_col2:
+    with col2:
         if st.button("🗑️ Clear Input"):
             current_key = int(st.session_state["msg_key"].split("_")[-1])
             st.session_state["msg_key"] = f"msg_input_{current_key + 1}"
             st.rerun()
     
-    with control_col3:
-        # Live chat with 0.2 second refresh
-        live = st.checkbox("🔴 Live Chat", value=True, key="live_chat")
+    with col3:
+        if st.button("🚪 Exit Chat"):
+            # Clear partner selection and disable live chat
+            st.session_state.partner_select = ""
+            if 'live_chat' in st.session_state:
+                st.session_state.live_chat = False
+            st.success("👋 Left the chat")
+            st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    with col4:
+        live = st.checkbox("🔴 Live Chat", value=True)
 
-    # Auto-refresh for live chat every 0.2 seconds
+    # Auto refresh
     if live:
         time.sleep(0.2)
         st.rerun()
