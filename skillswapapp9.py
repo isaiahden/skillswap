@@ -443,32 +443,16 @@ def chat_interface():
     # WhatsApp-style chat interface with enhanced visibility
     st.markdown("""
     <style>
-    /* Remove Streamlit’s default top spacing and background artifacts */
-    .block-container {
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
-    }
-
-    section.main > div {
-        padding-top: 0 !important;
-        background-color: transparent !important;
-    }
-
-    .element-container:nth-child(1) {
-        margin-top: 0px !important;
-    }
-
-    header {
-        visibility: hidden;
-    }
-
-    body {
-        background-color: #0a1929 !important;  /* Same as your chat background */
-    }
+    .block-container { padding-top: 0rem !important; padding-bottom: 0rem !important; }
+    section.main > div { padding-top: 0 !important; background-color: transparent !important; }
+    .element-container:nth-child(1) { margin-top: 0px !important; }
+    header { visibility: hidden; }
+    body { background-color: #0a1929 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("""<style>
+    st.markdown("""
+    <style>
     * { color: white !important; }
     .stSelectbox label { color: white !important; font-weight: 600 !important; }
     .stSelectbox div[role='button'],
@@ -488,8 +472,6 @@ def chat_interface():
     .stTextInput input::placeholder {
         color: rgba(0,0,0,0.5) !important;
     }
-
-    /* Default buttons (e.g. Refresh, Logout) */
     .stButton button {
         background-color: #1b1f23 !important;
         color: white !important;
@@ -497,8 +479,6 @@ def chat_interface():
         padding: 8px 16px !important;
         font-size: 14px !important;
     }
-
-    /* Custom round SEND button only */
     button.send-button {
         background-color: #25d366 !important;
         color: white !important;
@@ -513,7 +493,6 @@ def chat_interface():
         box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
         cursor: pointer;
     }
-
     .chat-header {
         background: #075e54;
         padding: 15px 20px;
@@ -567,10 +546,10 @@ def chat_interface():
         color: rgba(255,255,255,0.6);
         padding: 40px;
     }
-    </style>""", unsafe_allow_html=True)
+    </style>
+    """, unsafe_allow_html=True)
 
     st.markdown("### 👥 Select Chat Partner")
-
 
     try:
         users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
@@ -667,8 +646,6 @@ def chat_interface():
     if live:
         time.sleep(2)
         st.rerun()
-
-
 
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
