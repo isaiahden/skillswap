@@ -571,11 +571,7 @@ def chat_interface():
 
     st.markdown("### 👥 Select Chat Partner")
 
-
-
-
-    
-    try:
+try:
         users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
         if not users:
             st.warning("⚠️ No other users available to chat with.")
@@ -590,8 +586,7 @@ def chat_interface():
         return
 
     chat_id = "_".join(sorted([st.session_state.username, partner]))
-    
-    # Chat box UI
+
     st.markdown('<div class="whatsapp-chat">', unsafe_allow_html=True)
     partner_initial = partner[0].upper()
     st.markdown(f'''
@@ -631,13 +626,19 @@ def chat_interface():
     except Exception as e:
         st.error(f"❌ Error loading messages: {str(e)}")
 
-    st.markdown('</div>', unsafe_allow_html=True)  # End messages
+    st.markdown('</div>', unsafe_allow_html=True)  # End messages container
 
     # Message input
     st.markdown('<div style="padding:10px;">', unsafe_allow_html=True)
     col1, col2 = st.columns([6, 1])
     with col1:
-        msg = st.text_input("", placeholder="Type a message...", key="msg_input", label_visibility="collapsed")
+        msg = st.text_input(
+            "",
+            value=st.session_state.get("msg_input", ""),
+            placeholder="Type a message...",
+            key="msg_input",
+            label_visibility="collapsed"
+        )
     with col2:
         if st.button("➤", key="send_btn"):
             if msg.strip():
@@ -647,7 +648,7 @@ def chat_interface():
                     "text": msg.strip(),
                     "timestamp": datetime.now()
                 })
-                st.session_state.msg_input = ""
+                st.session_state["msg_input"] = ""
                 st.rerun()
             else:
                 st.warning("⚠️ Please enter a message before sending.")
@@ -664,7 +665,6 @@ def chat_interface():
     if live:
         time.sleep(2)
         st.rerun()
-
 
 
 def view_profiles():
