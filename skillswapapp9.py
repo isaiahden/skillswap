@@ -532,13 +532,40 @@ def chat_interface():
         background-color: #0a1929;
     }
     .message-wrapper { margin-bottom: 15px; display: flex; }
-    .message-sent { background: #dcf8c6; color: black; margin-left: auto; border-radius: 18px; padding: 10px; }
-    .message-received { background: white; color: black; margin-right: auto; border-radius: 18px; padding: 10px; }
-    .message-time { font-size: 11px; color: rgba(0,0,0,0.5); text-align: right; }
-    .no-messages { text-align: center; font-style: italic; color: rgba(255,255,255,0.6); padding: 40px; }
+    .message-sent {
+        background: #dcf8c6;
+        color: black !important;
+        margin-left: auto;
+        border-radius: 18px;
+        padding: 10px;
+        word-wrap: break-word;
+        max-width: 75%;
+    }
+    .message-received {
+        background: white;
+        color: black !important;
+        margin-right: auto;
+        border-radius: 18px;
+        padding: 10px;
+        word-wrap: break-word;
+        max-width: 75%;
+    }
+    .message-time {
+        font-size: 11px;
+        color: rgba(0,0,0,0.5);
+        text-align: right;
+        margin-top: 4px;
+    }
+    .no-messages {
+        text-align: center;
+        font-style: italic;
+        color: rgba(255,255,255,0.6);
+        padding: 40px;
+    }
     </style>""", unsafe_allow_html=True)
 
     st.markdown("### 👥 Select Chat Partner")
+
 
     
     try:
