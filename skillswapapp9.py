@@ -632,7 +632,7 @@ def chat_interface():
                     "timestamp": datetime.now()
                 })
                 st.session_state["typed_msg"] = ""  # Clear the input manually
-                st.experimental_rerun()  # Works on most systems; if not, reload by another means
+                st.rerun()  # Works on most systems; if not, reload by another means
             else:
                 st.warning("⚠️ Please enter a message before sending.")
     st.markdown('</div>', unsafe_allow_html=True)
