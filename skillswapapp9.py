@@ -531,7 +531,7 @@ def chat_interface():
         padding: 20px 15px;
         background-color: #0a1929;
     }
-    .message-wrapper { margin-bottom: 15px; display: flex; }
+    .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; }
     .message-sent {
         background: #dcf8c6;
         color: black !important;
@@ -540,6 +540,8 @@ def chat_interface():
         padding: 10px;
         word-wrap: break-word;
         max-width: 75%;
+        display: inline-block;
+        font-size: 14px;
     }
     .message-received {
         background: white;
@@ -549,6 +551,8 @@ def chat_interface():
         padding: 10px;
         word-wrap: break-word;
         max-width: 75%;
+        display: inline-block;
+        font-size: 14px;
     }
     .message-time {
         font-size: 11px;
@@ -565,6 +569,7 @@ def chat_interface():
     </style>""", unsafe_allow_html=True)
 
     st.markdown("### 👥 Select Chat Partner")
+
 
 
     
