@@ -470,12 +470,12 @@ def chat_interface():
 
     st.markdown("""<style>
     * { color: white !important; }
-    .stSelectbox label { color: white !important; font-weight: 600 !important; }
+    .stSelectbox label { color: black !important; font-weight: 600 !important; }
     .stSelectbox div[role='button'],
     .stSelectbox div[data-baseweb="select"],
     div[role='listbox'] > div {
         color: black !important;
-        background-color: white !important;
+        background-color: black !important;
         border-radius: 25px !important;
     }
     .stTextInput input {
