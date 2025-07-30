@@ -454,56 +454,151 @@ def show_notifications():
             st.sidebar.success("Cleared!")
 
 def chat_interface():
-    # --- Fix for invisible selectbox text ---
+    # Enhanced styling for better visibility and UX
     st.markdown("""
         <style>
+        /* Selectbox styling */
         .stSelectbox label {
             color: white !important;
+            font-weight: 600 !important;
         }
         .stSelectbox div[role='button'] {
             color: black !important;
             background-color: white !important;
+            border-radius: 6px !important;
         }
         .stSelectbox div[data-baseweb="select"] {
             background-color: white !important;
         }
         div[role='listbox'] > div {
             color: black !important;
+            background-color: white !important;
+        }
+        
+        /* Chat styling */
+        .chat-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .message-bubble {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .message-sent {
+            background-color: rgba(34, 197, 94, 0.8);
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message-received {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+        }
+        
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        /* Text input styling */
+        .stTextInput input {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
         </style>
     """, unsafe_allow_html=True)
-
+    
     st.markdown("<div class='chat-header'><h4>💬 Chat</h4></div>", unsafe_allow_html=True)
-    users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
-    partner = st.selectbox("Partner:", users)
-
-    chat_id = "_".join(sorted([st.session_state.username, partner]))
-    msgs = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
-
-    for m in msgs:
-        d = m.to_dict()
-        sent = d["sender"] == st.session_state.username
-        cls = "message-sent" if sent else "message-received"
-        name = "You" if sent else d["sender"]
-        st.markdown(f"""
-            <div class='message-bubble {cls} clearfix'>
-                <b>{name}</b><br>{d['text']}<br>
-                <small>{d['timestamp'].strftime('%H:%M')}</small>
-            </div>
-        """, unsafe_allow_html=True)
-
+    
+    # Get users with error handling
+    try:
+        users = [doc.id for doc in db.collection("users").stream() if doc.id != st.session_state.username]
+        if not users:
+            st.warning("No other users available to chat with.")
+            return
+    except Exception as e:
+        st.error(f"Error loading users: {e}")
+        return
+    
+    partner = st.selectbox("Select a partner to chat with:", users)
+    
+    if not partner:
+        st.info("Please select a chat partner to start messaging.")
+        return
+    
+    # Create chat container
+    chat_container = st.container()
+    
+    with chat_container:
+        chat_id = "_".join(sorted([st.session_state.username, partner]))
+        
+        try:
+            msgs = db.collection("chats").document(chat_id).collection("messages").order_by("timestamp").stream()
+            
+            # Display messages
+            for m in msgs:
+                d = m.to_dict()
+                sent = d["sender"] == st.session_state.username
+                cls = "message-sent" if sent else "message-received"
+                name = "You" if sent else d["sender"]
+                
+                # Format timestamp safely
+                timestamp = d.get('timestamp')
+                time_str = timestamp.strftime('%H:%M') if timestamp else "Unknown time"
+                
+                st.markdown(f"""
+                    <div class='message-bubble {cls} clearfix'>
+                        <b>{name}</b><br>
+                        {d.get('text', '')}<br>
+                        <small style='opacity: 0.7;'>{time_str}</small>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+        except Exception as e:
+            st.error(f"Error loading messages: {e}")
+    
     st.markdown("<div class='clearfix'></div>", unsafe_allow_html=True)
-    txt = st.text_input("Type a message", key="msg_input")
-    if st.button("Send"):
-        if txt.strip():
-            db.collection("chats").document(chat_id).collection("messages").add({
-                "sender": st.session_state.username,
-                "receiver": partner,
-                "text": txt.strip(),
-                "timestamp": datetime.now()
-            })
-            st.rerun()
-
+    
+    # Message input section
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        txt = st.text_input("Type a message", key="msg_input", placeholder="Enter your message here...")
+    
+    with col2:
+        send_button = st.button("📤 Send", use_container_width=True)
+    
+    # Send message
+    if send_button or (txt and st.session_state.get('enter_pressed', False)):
+        if txt and txt.strip():
+            try:
+                db.collection("chats").document(chat_id).collection("messages").add({
+                    "sender": st.session_state.username,
+                    "receiver": partner,
+                    "text": txt.strip(),
+                    "timestamp": datetime.now()
+                })
+                # Clear the input
+                st.session_state.msg_input = ""
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error sending message: {e}")
+        else:
+            st.warning("Please enter a message before sending.")
+    
+    # Auto-refresh option
+    if st.checkbox("Auto-refresh messages", value=False):
+        time.sleep(2)
+        st.rerun()
 
 
 def view_profiles():
