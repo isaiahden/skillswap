@@ -861,7 +861,7 @@ else:
 
     section = st.sidebar.radio(
         "📂 Menu",
-        ["💬 Chat", "🧑‍💻 Profiles", "🚪 Rooms", "👤 Profile", "🔔 Notifications"],
+        ["💬 Chat", "🧑‍💻 Profiles", "👤 Profile", "🔔 Notifications"],
         key="main_menu_radio"
     )
 
