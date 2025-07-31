@@ -464,7 +464,7 @@ def show_notifications():
             db.collection("users").document(st.session_state.username).update({"notifications":[]})
             st.sidebar.success("Cleared!")
 
-import time  # Place this at the top of your script
+# Place this at the top of your script
 def chat_interface():
     import time
     from datetime import datetime
@@ -493,7 +493,7 @@ def chat_interface():
 
     /* Selectbox styling */
     .stSelectbox label {
-        color: white;
+        color: black;
         font-weight: 600;
     }
 
