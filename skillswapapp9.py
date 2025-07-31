@@ -412,34 +412,45 @@ st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
 # === INTERFACE FUNCTIONS ===
 # Make sure this is imported at the top
 
-def view_profiles():
-    st.subheader("🧑‍🏫 Browse Users")
-    search = st.text_input("Search skill or role")
-    us = [(doc.id, doc.to_dict()) for doc in db.collection("users").stream()]
-    us = [u for u in us if u[0] != st.session_state.username]
-    us = sorted(us, key=lambda x: (x[1].get("skills", [""])[0].lower() if x[1].get("skills") else ""))
+def profile_edit():
+    d = get_user_data(st.session_state.username)
+    if d:
+        st.sidebar.header("👤 Edit Profile")
 
-    for uname, d in us:
-        if search and search.lower() not in d.get("role", "").lower() and not any(search.lower() in s.lower() for s in d.get("skills", [])):
-            continue
-
-        first_letter = uname[0].upper()
-        st.markdown(f"""
-            <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                <div style="width: 50px; height: 50px; background-color: #4A90E2; border-radius: 50%;
+        # Avatar Display (First Letter Circle or Photo if exists)
+        st.sidebar.markdown("### Profile Avatar")
+        if d.get("photo_url"):
+            st.sidebar.markdown(f"""
+                <img src="{d['photo_url']}" width="80" style="border-radius: 50%;" />
+            """, unsafe_allow_html=True)
+        else:
+            first_letter = st.session_state.username[0].upper()
+            st.sidebar.markdown(f"""
+                <div style="width: 80px; height: 80px; background-color: #4A90E2; border-radius: 50%;
                             display: flex; align-items: center; justify-content: center;
-                            font-size: 20px; color: white; margin-right: 10px;">
+                            font-size: 36px; color: white;">
                     {first_letter}
                 </div>
-                <div>
-                    <strong>{uname}</strong><br>
-                    <em>Role:</em> {d.get('role', 'N/A')}<br>
-                    <em>Skills:</em> {', '.join(d.get('skills', [])) or 'None'}<br>
-                    <em>Bio:</em> {d.get('bio', '')}
-                </div>
-            </div>
-            <hr style="border: 0.5px solid #ddd;" />
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+
+        # Editable Fields
+        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""), key="profile_bio")
+        role = st.sidebar.selectbox(
+            "Role", ["Student", "Teacher"],
+            index=["Student", "Teacher"].index(d.get("role", "Student")),
+            key="profile_role"
+        )
+        skills = st.sidebar.text_input("Skills (comma separated)", value=", ".join(d.get("skills", [])))
+
+        # Save button
+        if st.sidebar.button("Update Profile", key="update_profile_btn"):
+            db.collection("users").document(st.session_state.username).update({
+                "bio": bio,
+                "role": role,
+                "skills": [s.strip() for s in skills.split(",") if s.strip()]
+            })
+            st.sidebar.success("Profile updated!", icon="✅")
+
 
 
             
