@@ -21,15 +21,6 @@ if not firebase_admin._apps:
 # Always set db after Firebase is initialized (even if it was already initialized)
 db = firestore.client()
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
-    firebase_admin.initialize_app(cred, {
-        'storageBucket': 'skillswapapp9.firebasestorage.com'  # ✅ Must match bucket name exactly
-    })
-
-db = firestore.client()
-bucket = storage.bucket()
-
 st.markdown("""
 <style>
 /* Make radio button text white */
@@ -421,41 +412,35 @@ st.set_page_config(page_title="SkillSwap Secure Auth", layout="centered")
 # === INTERFACE FUNCTIONS ===
 # Make sure this is imported at the top
 
-def profile_edit():
-    d = get_user_data(st.session_state.username)
-    if d:
-        st.sidebar.header("👤 Edit Profile")
-        
-        # Display current profile picture if exists
-        photo_url = d.get("photo_url", "")
-        if photo_url:
-            st.sidebar.image(photo_url, width=100, caption="Current Photo")
-        
-        # Edit fields
-        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""), key="profile_bio")
-        role = st.sidebar.selectbox(
-            "Role", ["Student", "Teacher"],
-            index=["Student", "Teacher"].index(d.get("role", "Student")),
-            key="profile_role"
-        )
+def view_profiles():
+    st.subheader("🧑‍🏫 Browse Users")
+    search = st.text_input("Search skill or role")
+    us = [(doc.id, doc.to_dict()) for doc in db.collection("users").stream()]
+    us = [u for u in us if u[0] != st.session_state.username]
+    us = sorted(us, key=lambda x: (x[1].get("skills", [""])[0].lower() if x[1].get("skills") else ""))
 
-        # Upload new profile picture
-        uploaded_file = st.sidebar.file_uploader("Upload Profile Picture", type=["png", "jpg", "jpeg"])
-        if uploaded_file:
-            bucket = storage.bucket()
-            blob = bucket.blob(f"profile_pics/{st.session_state.username}_{uploaded_file.name}")
-            blob.upload_from_file(uploaded_file, content_type=uploaded_file.type)
-            blob.make_public()
-            photo_url = blob.public_url  # Update to new URL
+    for uname, d in us:
+        if search and search.lower() not in d.get("role", "").lower() and not any(search.lower() in s.lower() for s in d.get("skills", [])):
+            continue
 
-        if st.sidebar.button("Update Profile", key="update_profile_btn"):
-            update_data = {
-                "bio": bio,
-                "role": role,
-                "photo_url": photo_url
-            }
-            db.collection("users").document(st.session_state.username).update(update_data)
-            st.sidebar.success("Profile updated!", icon="✅")
+        first_letter = uname[0].upper()
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <div style="width: 50px; height: 50px; background-color: #4A90E2; border-radius: 50%;
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 20px; color: white; margin-right: 10px;">
+                    {first_letter}
+                </div>
+                <div>
+                    <strong>{uname}</strong><br>
+                    <em>Role:</em> {d.get('role', 'N/A')}<br>
+                    <em>Skills:</em> {', '.join(d.get('skills', [])) or 'None'}<br>
+                    <em>Bio:</em> {d.get('bio', '')}
+                </div>
+            </div>
+            <hr style="border: 0.5px solid #ddd;" />
+        """, unsafe_allow_html=True)
+
 
             
 def show_notifications():
@@ -814,17 +799,35 @@ def view_profiles():
         if search and search.lower() not in d.get("role", "").lower() and not any(search.lower() in s.lower() for s in d.get("skills", [])):
             continue
 
-        # Profile Picture
-        if d.get("photo_url"):
-            st.image(d["photo_url"], width=80)
+        st.markdown("<div style='display: flex; align-items: center;'>", unsafe_allow_html=True)
 
+        # Profile Picture or Fallback Avatar
+        if d.get("photo_url"):
+            st.markdown(f"""
+                <img src="{d['photo_url']}" width="60" style="border-radius: 50%; margin-right: 12px;" />
+            """, unsafe_allow_html=True)
+        else:
+            first_letter = uname[0].upper()
+            st.markdown(f"""
+                <div style="width: 60px; height: 60px; background-color: #4A90E2; border-radius: 50%;
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 28px; color: white; margin-right: 12px;">
+                    {first_letter}
+                </div>
+            """, unsafe_allow_html=True)
+
+        # User Info
         st.markdown(f"""
-            ### 👤 {uname}
-            **Role**: {d.get('role', 'N/A')}  
-            **Bio**: {d.get('bio', '')}  
-            **Skills**: {', '.join(d.get('skills', [])) or 'None'}
-            ---
-        """)
+            <div>
+                <strong>{uname}</strong><br>
+                <em>Role:</em> {d.get('role', 'N/A')}<br>
+                <em>Skills:</em> {', '.join(d.get('skills', [])) or 'None'}<br>
+                <em>Bio:</em> {d.get('bio', '')}
+            </div>
+        </div>
+        <hr style='border: 0.5px solid #ddd;' />
+        """, unsafe_allow_html=True)
+
 
 
 
