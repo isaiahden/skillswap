@@ -571,7 +571,7 @@ def chat_interface():
     }
 
     .message-received {
-        background: #f1f3f4;
+        background: green;
         color: #333;
         padding: 8px 12px;
         border-radius: 18px;
