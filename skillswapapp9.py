@@ -786,15 +786,76 @@ def view_profiles():
 
 
 def channel_interface():
-    st.markdown("<div class='chat-header'><h4>📢 SkillSwap Channels</h4></div>", unsafe_allow_html=True)
+    import time
+    from datetime import datetime
+
+    st.markdown("<div class='chat-header'><h4>📢 SkillSwap Groups</h4></div>", unsafe_allow_html=True)
+
+    # Get list of all channels
     channels = [c.to_dict() for c in db.collection("channels").stream()]
-    st.sidebar.markdown("---")
-    st.markdown("### Available Channels")
-    for ch in channels:
-        st.markdown(f"**{ch['name']}** — by {ch['created_by']}")
-        if st.button(f"Follow {ch['name']}", key=f"follow_{ch['name']}"):
-            db.collection("channels").document(ch['name'].lower()).update({"followers":firestore.ArrayUnion([st.session_state.username])})
-            st.success("Now following.")
+    channel_names = [ch["name"] for ch in channels]
+    selected_channel = st.selectbox("Select a group:", channel_names)
+
+    if not selected_channel:
+        st.info("Select a group to start chatting.")
+        return
+
+    # Join button (if not already a member)
+    channel_ref = db.collection("channels").document(selected_channel.lower())
+    channel_data = channel_ref.get().to_dict()
+    if st.session_state.username not in channel_data.get("followers", []):
+        if st.button("Join Group"):
+            channel_ref.update({"followers": firestore.ArrayUnion([st.session_state.username])})
+            st.success("✅ You’ve joined this group!")
+            st.rerun()
+
+    st.markdown(f"<div class='chat-header'><b>{selected_channel}</b> group chat</div>", unsafe_allow_html=True)
+    st.markdown("<div class='messages-container'>", unsafe_allow_html=True)
+
+    # Load messages
+    try:
+        msgs = db.collection("channels").document(selected_channel.lower()).collection("messages").order_by("timestamp").stream()
+        for msg in msgs:
+            d = msg.to_dict()
+            sender = d.get("sender", "Anonymous")
+            text = d.get("text", "")
+            time_str = d.get("timestamp").strftime("%H:%M") if "timestamp" in d else ""
+            bubble_class = "message-sent" if sender == st.session_state.username else "message-received"
+            st.markdown(f"""
+                <div class="message-wrapper">
+                    <div class="{bubble_class}">
+                        <strong>{sender}</strong><br>{text}
+                        <div class="message-time">{time_str}</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Failed to load messages: {e}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Message input
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        msg = st.text_input("Type a message", key="group_msg_input", label_visibility="collapsed")
+    with col2:
+        if st.button("➤", key="send_group_btn"):
+            if msg.strip():
+                db.collection("channels").document(selected_channel.lower()).collection("messages").add({
+                    "sender": st.session_state.username,
+                    "text": msg.strip(),
+                    "timestamp": datetime.now()
+                })
+                st.session_state["group_msg_input"] = ""
+                st.rerun()
+            else:
+                st.warning("⚠️ Message is empty.")
+
+    # Live chat
+    if st.checkbox("🔴 Live Group Chat", value=True):
+        time.sleep(1)
+        st.rerun()
+
 
 # === MAIN ===
 if not st.session_state.logged_in:
