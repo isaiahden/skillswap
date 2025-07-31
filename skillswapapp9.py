@@ -843,16 +843,6 @@ def view_profiles():
 
 
 
-def channel_interface():
-    st.markdown("<div class='chat-header'><h4>📢 SkillSwap Channels</h4></div>", unsafe_allow_html=True)
-    channels = [c.to_dict() for c in db.collection("channels").stream()]
-    st.sidebar.markdown("---")
-    st.markdown("### Available Channels")
-    for ch in channels:
-        st.markdown(f"**{ch['name']}** — by {ch['created_by']}")
-        if st.button(f"Follow {ch['name']}", key=f"follow_{ch['name']}"):
-            db.collection("channels").document(ch['name'].lower()).update({"followers":firestore.ArrayUnion([st.session_state.username])})
-            st.success("Now following.")
 
 
 
@@ -887,9 +877,7 @@ else:
         chat_interface()
     elif section == "🧑‍💻 Profiles":
         view_profiles()
-    elif section == "🚪 Rooms":
-        channel_interface()
-    elif section == "👤 Profile":
+    elif section == "My Profile":
         profile_edit()
     elif section == "🔔 Notifications":
         show_notifications()
