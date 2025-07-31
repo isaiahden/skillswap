@@ -480,10 +480,17 @@ def chat_interface():
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
-    
-    /* Sidebar styling */
-    .stSidebar > div {
-        background-color: #1e1e1e;
+    /* Target selectbox input text color based on system theme */
+    div[data-baseweb="select"] > div {
+        color: black;  /* Default (light mode) */
+    }
+
+    /* When user system is in dark mode */
+    @media (prefers-color-scheme: dark) {
+        div[data-baseweb="select"] > div {
+            color: white !important;
+        }
+    }
     }
 
     /* Text colors */
