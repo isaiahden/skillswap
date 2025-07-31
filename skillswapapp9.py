@@ -488,7 +488,7 @@ def chat_interface():
 
     /* Text colors */
     .stMarkdown h3 {
-        color: white;
+        color: black;
     }
 
     /* Selectbox styling */
