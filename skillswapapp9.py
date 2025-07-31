@@ -788,72 +788,673 @@ def view_profiles():
 def channel_interface():
     import time
     from datetime import datetime
-
-    st.markdown("<div class='chat-header'><h4>📢 SkillSwap Groups</h4></div>", unsafe_allow_html=True)
-
+    
+    # WhatsApp Group Chat Styling
+    st.markdown("""
+        <style>
+        /* FORCE ALL TEXT TO BE VISIBLE */
+        * {
+            color: white !important;
+        }
+        
+        /* WhatsApp Group Chat Container */
+        .whatsapp-group-chat {
+            background: linear-gradient(to bottom, #0f4c75, #3282b8, #0f4c75);
+            min-height: 600px;
+            border-radius: 10px;
+            padding: 0;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Group Chat Header */
+        .group-header {
+            background: #075e54;
+            color: white !important;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .group-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .group-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #25d366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .group-details h4 {
+            margin: 0 !important;
+            color: white !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+        }
+        
+        .group-members {
+            color: rgba(255,255,255,0.8) !important;
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        .join-btn {
+            background: #25d366 !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 20px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Group Messages Container */
+        .group-messages-container {
+            padding: 15px;
+            height: 450px;
+            overflow-y: auto;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="group-bg" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23group-bg)"/></svg>');
+            background-color: #0a1929;
+        }
+        
+        /* Group Message Bubbles */
+        .group-message-wrapper {
+            margin-bottom: 12px;
+            clear: both;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .group-message-sent-wrapper {
+            align-items: flex-end;
+        }
+        
+        .group-message-received-wrapper {
+            align-items: flex-start;
+        }
+        
+        .group-message-bubble {
+            max-width: 80%;
+            padding: 6px 10px 4px 10px;
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            word-wrap: break-word;
+            line-height: 1.3;
+        }
+        
+        .group-message-sent {
+            background: #dcf8c6;
+            color: #000 !important;
+            border-bottom-right-radius: 3px;
+            margin-left: auto;
+        }
+        
+        .group-message-sent::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -6px;
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+            border-left-color: #dcf8c6;
+            border-bottom: 0;
+        }
+        
+        .group-message-received {
+            background: white;
+            color: #000 !important;
+            border-bottom-left-radius: 3px;
+            margin-right: auto;
+        }
+        
+        .group-message-received::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+            border-right-color: white;
+            border-bottom: 0;
+        }
+        
+        .group-sender-name {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: #25d366 !important;
+            margin-bottom: 2px !important;
+        }
+        
+        .group-message-content {
+            color: inherit !important;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .group-message-time {
+            font-size: 10px;
+            color: rgba(0,0,0,0.5) !important;
+            text-align: right;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+        }
+        
+        /* System Messages */
+        .system-message {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8) !important;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin: 8px auto;
+            max-width: 70%;
+        }
+        
+        /* Group Input Area */
+        .group-input-container {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Selectbox styling for groups */
+        .stSelectbox label {
+            color: white !important;
+            font-weight: 600 !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important;
+        }
+        .stSelectbox div[role='button'] {
+            color: black !important;
+            background-color: white !important;
+            border-radius: 25px !important;
+            border: none !important;
+            padding: 10px 16px !important;
+        }
+        
+        /* Group text input */
+        .stTextInput input {
+            background-color: white !important;
+            color: black !important;
+            border: none !important;
+            border-radius: 25px !important;
+            padding: 12px 16px !important;
+            font-size: 14px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+        }
+        
+        .stTextInput input::placeholder {
+            color: rgba(0,0,0,0.5) !important;
+        }
+        
+        /* Group send button */
+        .stButton button[key="send_group_btn"] {
+            background-color: #25d366 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 45px !important;
+            height: 45px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 18px !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+        }
+        
+        # Group Creation Section Styling */
+        .stExpander {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 10px !important;
+            margin-bottom: 20px !important;
+        }
+        
+        .stExpander > div > div > div > div {
+            color: white !important;
+        }
+        
+        /* Create group button */
+        button[key="create_group_btn"] {
+            background: linear-gradient(45deg, #25d366, #128c7e) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 25px !important;
+            padding: 10px 20px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 3px 10px rgba(37, 211, 102, 0.3) !important;
+        }
+        
+        button[key="create_group_btn"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4) !important;
+        }
+        
+        /* Group info display */
+        .group-info-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #25d366;
+        }
+        
+        /* Admin badge */
+        .admin-badge {
+            background: #ff9800;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        /* System messages styling */
+        .system-message {
+            background: rgba(37, 211, 102, 0.2) !important;
+            color: #25d366 !important;
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 10px auto;
+            max-width: 80%;
+            border: 1px solid rgba(37, 211, 102, 0.3);
+        }
+        
+        /* No messages state */
+        .no-group-messages {
+            text-align: center;
+            color: rgba(255,255,255,0.6) !important;
+            font-style: italic;
+            padding: 50px 20px;
+        }
+        
+        /* Scrollbar for group chat */
+        .group-messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .group-messages-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        
+        .group-messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div class='group-header'><h4>📢 SkillSwap Groups</h4></div>", unsafe_allow_html=True)
+    
+    # Group Creation Section
+    with st.expander("➕ Create New Group", expanded=False):
+        st.markdown("### 🆕 Create Your Own Group")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            new_group_name = st.text_input(
+                "Group Name:", 
+                placeholder="Enter group name (e.g., 'Python Developers', 'Design Hub')",
+                key="new_group_name"
+            )
+        
+        with col2:
+            group_category = st.selectbox(
+                "Category:",
+                ["💻 Tech", "🎨 Design", "📈 Business", "🎓 Education", "🌟 General", "🏃 Fitness", "🍳 Cooking", "📚 Books"],
+                key="group_category"
+            )
+        
+        group_description = st.text_area(
+            "Group Description:",
+            placeholder="Describe what this group is about...",
+            max_chars=200,
+            key="group_description"
+        )
+        
+        # Group privacy settings
+        col3, col4 = st.columns([1, 1])
+        
+        with col3:
+            is_private = st.checkbox("🔒 Private Group", help="Only invited members can join")
+        
+        with col4:
+            max_members = st.number_input("👥 Max Members:", min_value=2, max_value=1000, value=100, key="max_members")
+        
+        if st.button("🚀 Create Group", key="create_group_btn", type="primary"):
+            if new_group_name and new_group_name.strip():
+                try:
+                    # Check if group name already exists
+                    existing_groups = [c.to_dict()["name"].lower() for c in db.collection("channels").stream()]
+                    
+                    if new_group_name.lower() in existing_groups:
+                        st.error("❌ A group with this name already exists!")
+                    else:
+                        # Create new group
+                        group_data = {
+                            "name": new_group_name.strip(),
+                            "description": group_description.strip() or "No description provided",
+                            "category": group_category,
+                            "creator": st.session_state.username,
+                            "created_at": datetime.now(),
+                            "followers": [st.session_state.username],  # Creator automatically joins
+                            "admins": [st.session_state.username],  # Creator is admin
+                            "is_private": is_private,
+                            "max_members": max_members,
+                            "member_count": 1
+                        }
+                        
+                        # Add group to database
+                        db.collection("channels").document(new_group_name.lower()).set(group_data)
+                        
+                        # Add welcome message
+                        db.collection("channels").document(new_group_name.lower()).collection("messages").add({
+                            "sender": "System",
+                            "text": f"🎉 Welcome to {new_group_name}! This group was created by {st.session_state.username}.",
+                            "timestamp": datetime.now(),
+                            "is_system": True
+                        })
+                        
+                        st.success(f"✅ Group '{new_group_name}' created successfully!")
+                        st.balloons()
+                        
+                        # Clear form
+                        st.session_state.new_group_name = ""
+                        st.session_state.group_description = ""
+                        
+                        time.sleep(2)
+                        st.rerun()
+                        
+                except Exception as e:
+                    st.error(f"❌ Error creating group: {e}")
+            else:
+                st.warning("⚠️ Please enter a group name!")
+    
     # Get list of all channels
-    channels = [c.to_dict() for c in db.collection("channels").stream()]
-    channel_names = [ch["name"] for ch in channels]
-    selected_channel = st.selectbox("Select a group:", channel_names)
-
-    if not selected_channel:
-        st.info("Select a group to start chatting.")
-        return
-
-    # Join button (if not already a member)
-    channel_ref = db.collection("channels").document(selected_channel.lower())
-    channel_data = channel_ref.get().to_dict()
-    if st.session_state.username not in channel_data.get("followers", []):
-        if st.button("Join Group"):
-            channel_ref.update({"followers": firestore.ArrayUnion([st.session_state.username])})
-            st.success("✅ You’ve joined this group!")
-            st.rerun()
-
-    st.markdown(f"<div class='chat-header'><b>{selected_channel}</b> group chat</div>", unsafe_allow_html=True)
-    st.markdown("<div class='messages-container'>", unsafe_allow_html=True)
-
-    # Load messages
     try:
-        msgs = db.collection("channels").document(selected_channel.lower()).collection("messages").order_by("timestamp").stream()
-        for msg in msgs:
-            d = msg.to_dict()
-            sender = d.get("sender", "Anonymous")
-            text = d.get("text", "")
-            time_str = d.get("timestamp").strftime("%H:%M") if "timestamp" in d else ""
-            bubble_class = "message-sent" if sender == st.session_state.username else "message-received"
-            st.markdown(f"""
-                <div class="message-wrapper">
-                    <div class="{bubble_class}">
-                        <strong>{sender}</strong><br>{text}
-                        <div class="message-time">{time_str}</div>
+        channels_docs = db.collection("channels").stream()
+        channels = []
+        
+        for c in channels_docs:
+            channel_data = c.to_dict()
+            channel_data["id"] = c.id
+            channels.append(channel_data)
+        
+        # Sort channels by creation date (newest first)
+        channels.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
+        
+        if not channels:
+            st.info("🏗️ No groups available yet. Create the first group above!")
+            return
+        
+        # Display available groups with details
+        st.markdown("### 🌐 Available Groups")
+        
+        # Create channel selection with additional info
+        channel_options = []
+        for ch in channels:
+            member_count = len(ch.get("followers", []))
+            category = ch.get("category", "🌟 General")
+            privacy = "🔒" if ch.get("is_private", False) else "🌐"
+            
+            option_text = f"{privacy} {ch['name']} ({member_count} members) - {category}"
+            channel_options.append(option_text)
+        
+        selected_option = st.selectbox("🔍 Select a group:", [""] + channel_options)
+        
+        if not selected_option:
+            st.info("💬 Select a group to start chatting")
+            return
+        
+        # Extract selected channel name
+        selected_channel = selected_option.split(" (")[0].replace("🔒 ", "").replace("🌐 ", "")
+            
+    except Exception as e:
+        st.error(f"Error loading groups: {e}")
+        return
+    
+    if not selected_channel:
+        st.info("💬 Select a group to start chatting")
+        return
+    
+    # WhatsApp-style group chat interface
+    st.markdown('<div class="whatsapp-group-chat">', unsafe_allow_html=True)
+    
+    try:
+        # Get channel data
+        channel_ref = db.collection("channels").document(selected_channel.lower())
+        channel_data = channel_ref.get().to_dict() or {}
+        
+        followers = channel_data.get("followers", [])
+        admins = channel_data.get("admins", [])
+        member_count = len(followers)
+        is_member = st.session_state.username in followers
+        is_admin = st.session_state.username in admins
+        creator = channel_data.get("creator", "Unknown")
+        description = channel_data.get("description", "No description")
+        category = channel_data.get("category", "🌟 General")
+        
+        # Group header with enhanced info
+        group_initial = selected_channel[0].upper() if selected_channel else "G"
+        
+        if is_member:
+            admin_badge = '<span class="admin-badge">ADMIN</span>' if is_admin else ''
+            
+            st.markdown(f'''
+                <div class="group-header">
+                    <div class="group-info">
+                        <div class="group-avatar">👥</div>
+                        <div class="group-details">
+                            <h4>{selected_channel} {admin_badge}</h4>
+                            <div class="group-members">{member_count} members • {category}</div>
+                        </div>
                     </div>
                 </div>
-            """, unsafe_allow_html=True)
-    except Exception as e:
-        st.error(f"Failed to load messages: {e}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Message input
-    col1, col2 = st.columns([6, 1])
-    with col1:
-        msg = st.text_input("Type a message", key="group_msg_input", label_visibility="collapsed")
-    with col2:
-        if st.button("➤", key="send_group_btn"):
-            if msg.strip():
+                <div class="group-info-card">
+                    <strong>📝 Description:</strong> {description}<br>
+                    <strong>👑 Created by:</strong> {creator}<br>
+                    <strong>📊 Category:</strong> {category}
+                </div>
+            ''', unsafe_allow_html=True)
+        else:
+            # Show join button if not a member
+            privacy_status = "🔒 Private Group" if channel_data.get("is_private", False) else "🌐 Public Group"
+            
+            st.markdown(f'''
+                <div class="group-header">
+                    <div class="group-info">
+                        <div class="group-avatar">👥</div>
+                        <div class="group-details">
+                            <h4>{selected_channel}</h4>
+                            <div class="group-members">{member_count} members • {privacy_status}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="group-info-card">
+                    <strong>📝 Description:</strong> {description}<br>
+                    <strong>👑 Created by:</strong> {creator}<br>
+                    <strong>📊 Category:</strong> {category}
+                </div>
+            ''', unsafe_allow_html=True)
+            
+            if st.button("🚀 Join Group", key="join_group_btn"):
+                try:
+                    # Check if group is at max capacity
+                    max_members = channel_data.get("max_members", 100)
+                    if member_count >= max_members:
+                        st.error(f"❌ Group is full! Maximum {max_members} members allowed.")
+                    else:
+                        # Update member count and add user
+                        channel_ref.update({
+                            "followers": firestore.ArrayUnion([st.session_state.username]),
+                            "member_count": member_count + 1
+                        })
+                        
+                        # Add system message about new member
+                        db.collection("channels").document(selected_channel.lower()).collection("messages").add({
+                            "sender": "System",
+                            "text": f"👋 {st.session_state.username} joined the group",
+                            "timestamp": datetime.now(),
+                            "is_system": True
+                        })
+                        
+                        st.success("✅ Welcome to the group!")
+                        time.sleep(1)
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Error joining group: {e}")
+            
+            st.info("👆 Join the group to participate in the chat")
+            st.markdown('</div>', unsafe_allow_html=True)
+            return
+        
+        # Messages container
+        st.markdown('<div class="group-messages-container">', unsafe_allow_html=True)
+        
+        # Load and display messages
+        try:
+            msgs = db.collection("channels").document(selected_channel.lower()).collection("messages").order_by("timestamp").stream()
+            
+            message_count = 0
+            for msg in msgs:
+                d = msg.to_dict()
+                if not d:
+                    continue
+                    
+                message_count += 1
+                sender = d.get("sender", "Anonymous")
+                text = d.get("text", "")
+                
+                # Format timestamp
+                timestamp = d.get("timestamp")
+                if timestamp:
+                    try:
+                        time_str = timestamp.strftime("%H:%M")
+                    except:
+                        time_str = "00:00"
+                else:
+                    time_str = "00:00"
+                
+                # Determine message type and styling
+                is_own_message = sender == st.session_state.username
+                is_system_message = d.get("is_system", False)
+                
+                if is_system_message:
+                    # System messages (joins, leaves, etc.)
+                    st.markdown(f'''
+                        <div class="system-message">
+                            {text}
+                        </div>
+                    ''', unsafe_allow_html=True)
+                else:
+                    # Regular user messages
+                    wrapper_class = "group-message-sent-wrapper" if is_own_message else "group-message-received-wrapper"
+                    bubble_class = "group-message-sent" if is_own_message else "group-message-received"
+                    
+                    # Display sender name only for received messages (like WhatsApp groups)
+                    sender_display = "" if is_own_message else f'<div class="group-sender-name">{sender}</div>'
+                    
+                    st.markdown(f'''
+                        <div class="group-message-wrapper {wrapper_class}">
+                            <div class="group-message-bubble {bubble_class}">
+                                {sender_display}
+                                <div class="group-message-content">{text}</div>
+                                <div class="group-message-time">
+                                    {time_str}
+                                    {'<span style="color: #4fc3f7;">✓✓</span>' if is_own_message else ''}
+                                </div>
+                            </div>
+                        </div>
+                    ''', unsafe_allow_html=True)
+            
+            if message_count == 0:
+                st.markdown('<div class="no-group-messages">🎉 Be the first to send a message!</div>', unsafe_allow_html=True)
+                
+        except Exception as e:
+            st.error(f"❌ Failed to load messages: {e}")
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Close messages container
+        
+        # Input area
+        st.markdown('<div class="group-input-container">', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([6, 1])
+        
+        with col1:
+            msg = st.text_input(
+                "", 
+                key="group_msg_input", 
+                placeholder=f"Message {selected_channel}...",
+                label_visibility="collapsed"
+            )
+        
+        with col2:
+            send_button = st.button("➤", key="send_group_btn", help="Send message")
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Close input container
+        
+        # Send message functionality
+        if send_button and msg and msg.strip():
+            try:
                 db.collection("channels").document(selected_channel.lower()).collection("messages").add({
                     "sender": st.session_state.username,
                     "text": msg.strip(),
                     "timestamp": datetime.now()
                 })
-                st.session_state["group_msg_input"] = ""
+                
+                st.session_state.group_msg_input = ""
                 st.rerun()
-            else:
-                st.warning("⚠️ Message is empty.")
-
-    # Live chat
-    if st.checkbox("🔴 Live Group Chat", value=True):
-        time.sleep(1)
+                
+            except Exception as e:
+                st.error(f"❌ Error sending message: {e}")
+        
+        elif send_button and not msg.strip():
+            st.warning("⚠️ Please enter a message")
+        
+    except Exception as e:
+        st.error(f"❌ Error loading group: {e}")
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close whatsapp-group-chat
+    
+    # Live chat controls
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button("🔄 Refresh", help="Get new messages"):
+            st.rerun()
+    
+    with col2:
+        live_mode = st.checkbox("🔴 Live Group Chat", value=True, help="Real-time updates")
+    
+    # Live chat functionality
+    if live_mode:
+        time.sleep(1.5)  # Faster refresh for group chats
         st.rerun()
 
 
