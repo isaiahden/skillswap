@@ -419,35 +419,40 @@ def profile_edit():
     if d:
         st.sidebar.header("👤 Edit Profile")
 
-        # Show current profile picture if exists
-        pic_path = d.get("profile_pic")
-        if pic_path and os.path.exists(pic_path):
-            st.sidebar.image(pic_path, width=100)
-
-        # Upload a new picture
-        pic = st.sidebar.file_uploader("Upload profile picture", type=["jpg", "png", "jpeg"])
-        if pic:
-            folder = Path("profile_pics")
-            folder.mkdir(exist_ok=True)
-            filepath = folder / f"{st.session_state.username}.jpg"
-            with open(filepath, "wb") as f:
-                f.write(pic.read())
-            pic_path = str(filepath)
-
+        # Avatar Display (First Letter Circle or Photo if exists)
+        st.sidebar.markdown("### Profile Avatar")
+        if d.get("photo_url"):
+            st.sidebar.markdown(f"""
+                <img src="{d['photo_url']}" width="80" style="border-radius: 50%;" />
+            """, unsafe_allow_html=True)
         else:
-            pic_path = d.get("profile_pic")
+            first_letter = st.session_state.username[0].upper()
+            st.sidebar.markdown(f"""
+                <div style="width: 80px; height: 80px; background-color: #4A90E2; border-radius: 50%;
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 36px; color: white;">
+                    {first_letter}
+                </div>
+            """, unsafe_allow_html=True)
 
-        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""))
-        role = st.sidebar.selectbox("Role", ["Student", "Teacher"],
-                                     index=["Student", "Teacher"].index(d.get("role", "Student")))
+        # Editable Fields
+        bio = st.sidebar.text_area("Bio", value=d.get("bio", ""), key="profile_bio")
+        role = st.sidebar.selectbox(
+            "Role", ["Student", "Teacher"],
+            index=["Student", "Teacher"].index(d.get("role", "Student")),
+            key="profile_role"
+        )
+        skills = st.sidebar.text_input("Skills (comma separated)", value=", ".join(d.get("skills", [])))
 
-        if st.sidebar.button("Update Profile"):
+        # Save button
+        if st.sidebar.button("Update Profile", key="update_profile_btn"):
             db.collection("users").document(st.session_state.username).update({
                 "bio": bio,
                 "role": role,
-                "profile_pic": pic_path  # save the local path
+                "skills": [s.strip() for s in skills.split(",") if s.strip()]
             })
-            st.sidebar.success("Profile updated ✅")
+            st.sidebar.success("Profile updated!", icon="✅")
+
 
 def show_notifications():
     d = get_user_data(st.session_state.username)
@@ -796,20 +801,44 @@ def chat_interface():
                     
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
-    users = [(doc.id, doc.to_dict()) for doc in db.collection("users").stream()]
-    for uname, d in users:
-        if uname == st.session_state.username:
-            continue
-        pic = d.get("profile_pic")
-        if pic and os.path.exists(pic):
-            st.image(pic, width=60)
-        else:
-            st.image("https://via.placeholder.com/60", width=60)
+    search = st.text_input("Search skill or role")
+    us = [(doc.id, doc.to_dict()) for doc in db.collection("users").stream()]
+    us = [u for u in us if u[0] != st.session_state.username]
+    us = sorted(us, key=lambda x: (x[1].get("skills", [""])[0].lower() if x[1].get("skills") else ""))
 
-        st.markdown(f"**{uname}** — {d.get('role', 'N/A')}")
-        st.markdown(f"📄 {d.get('bio', '')}")
-        st.markdown(f"🎯 Skills: {', '.join(d.get('skills', [])) or 'None'}")
-        st.markdown("---")
+    for uname, d in us:
+        if search and search.lower() not in d.get("role", "").lower() and not any(search.lower() in s.lower() for s in d.get("skills", [])):
+            continue
+
+        st.markdown("<div style='display: flex; align-items: center;'>", unsafe_allow_html=True)
+
+        # Profile Picture or Fallback Avatar
+        if d.get("photo_url"):
+            st.markdown(f"""
+                <img src="{d['photo_url']}" width="60" style="border-radius: 50%; margin-right: 12px;" />
+            """, unsafe_allow_html=True)
+        else:
+            first_letter = uname[0].upper()
+            st.markdown(f"""
+                <div style="width: 60px; height: 60px; background-color: #4A90E2; border-radius: 50%;
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 28px; color: white; margin-right: 12px;">
+                    {first_letter}
+                </div>
+            """, unsafe_allow_html=True)
+
+        # User Info
+        st.markdown(f"""
+            <div>
+                <strong>{uname}</strong><br>
+                <em>Role:</em> {d.get('role', 'N/A')}<br>
+                <em>Skills:</em> {', '.join(d.get('skills', [])) or 'None'}<br>
+                <em>Bio:</em> {d.get('bio', '')}
+            </div>
+        </div>
+        <hr style='border: 0.5px solid #ddd;' />
+        """, unsafe_allow_html=True)
+
 
 
 
