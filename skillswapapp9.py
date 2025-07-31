@@ -1,5 +1,4 @@
 import streamlit as st
-from firebase_admin import storage
 import firebase_admin
 from firebase_admin import credentials, firestore
 from firebase_admin import auth
@@ -21,7 +20,16 @@ if not firebase_admin._apps:
 
 # Always set db after Firebase is initialized (even if it was already initialized)
 db = firestore.client()
-    
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'skillswapapp9.firebasestorage.com'  # ✅ Must match bucket name exactly
+    })
+
+db = firestore.client()
+bucket = storage.bucket()
+
 st.markdown("""
 <style>
 /* Make radio button text white */
