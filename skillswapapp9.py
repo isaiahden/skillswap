@@ -798,13 +798,26 @@ def chat_interface():
 def view_profiles():
     st.subheader("🧑‍🏫 Browse Users")
     search = st.text_input("Search skill or role")
-    us = [(doc.id,doc.to_dict()) for doc in db.collection("users").stream()]
-    us = [u for u in us if u[0]!=st.session_state.username]
-    us = sorted(us, key=lambda x: (x[1].get("skills",[""])[0].lower() if x[1].get("skills") else ""))
-    for uname,d in us:
-        if search and search.lower() not in d.get("role","").lower() and not any(search.lower() in s.lower() for s in d.get("skills",[])):
+    us = [(doc.id, doc.to_dict()) for doc in db.collection("users").stream()]
+    us = [u for u in us if u[0] != st.session_state.username]
+    us = sorted(us, key=lambda x: (x[1].get("skills", [""])[0].lower() if x[1].get("skills") else ""))
+
+    for uname, d in us:
+        if search and search.lower() not in d.get("role", "").lower() and not any(search.lower() in s.lower() for s in d.get("skills", [])):
             continue
-        st.markdown(f"### 👤 {uname}\n**Role**: {d.get('role','N/A')}\n**Bio**: {d.get('bio','')}\n**Skills**: {', '.join(d.get('skills',[])) or 'None'}\n---")
+
+        # Profile Picture
+        if d.get("photo_url"):
+            st.image(d["photo_url"], width=80)
+
+        st.markdown(f"""
+            ### 👤 {uname}
+            **Role**: {d.get('role', 'N/A')}  
+            **Bio**: {d.get('bio', '')}  
+            **Skills**: {', '.join(d.get('skills', [])) or 'None'}
+            ---
+        """)
+
 
 
 
