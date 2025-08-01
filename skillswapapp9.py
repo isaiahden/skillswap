@@ -482,15 +482,16 @@ def chat_interface():
     }
     /* Target selectbox input text color based on system theme */
     div[data-baseweb="select"] > div {
-        color: black;  /* Default (light mode) */
+        color: black !important; /* Default (light mode) */
+        background-color: white !important;
     }
 
     /* When user system is in dark mode */
     @media (prefers-color-scheme: dark) {
         div[data-baseweb="select"] > div {
             color: white !important;
+            background-color: #2d3748 !important;
         }
-    }
     }
 
     /* Text colors */
@@ -498,10 +499,55 @@ def chat_interface():
         color: black;
     }
 
+    /* Auto h3 colors based on theme */
+    @media (prefers-color-scheme: dark) {
+        .stMarkdown h3 {
+            color: white !important;
+        }
+    }
+
     /* Selectbox styling */
     .stSelectbox label {
-        color: black;
-        font-weight: 600;
+        color: black !important;
+        font-weight: 600 !important;
+    }
+
+    /* Auto label colors based on theme */
+    @media (prefers-color-scheme: dark) {
+        .stSelectbox label {
+            color: white !important;
+         }
+    }
+
+    /* Complete selectbox styling for both themes */
+    .stSelectbox div[role='button'] {
+        color: black !important;
+        background-color: white !important;
+        border: 1px solid #ccc !important;
+        border-radius: 6px !important;
+    }
+
+    .stSelectbox div[data-baseweb="select"] {
+        background-color: white !important;
+    }
+
+    /* Dropdown options */
+    div[role='listbox'] > div {
+        color: black !important;
+        background-color: white !important;
+    }
+
+    div[role='listbox'] > div:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+    /* Dark mode for all selectbox elements */
+    @media (prefers-color-scheme: dark) {
+        .stSelectbox div[role='button'] {
+            color: white !important;
+            background-color: #2d3748 !important;
+            border: 1px solid #4a5568 !important;
+        }
     }
 
     /* Text input styling */
